@@ -1,125 +1,165 @@
 # Inventory Management System
 
-A simple REST API to manage product inventory using FastAPI and PostgreSQL.
+A full-stack inventory management application with React frontend and FastAPI backend.
 
 ## What This Does
 
-This is a backend API that lets you add, view, update, and delete products from an inventory database. It automatically creates the database tables and adds some sample products when you first run it.
+This app lets you manage product inventory with a simple UI. You can add, view, update, and delete products. All data is stored in a PostgreSQL database.
 
 ## Tech Stack
 
-- **FastAPI** - Python web framework
-- **PostgreSQL** - Database
-- **SQLAlchemy** - For talking to the database
-- **Pydantic** - For validating data
+**Backend:**
+- FastAPI - Python web framework
+- PostgreSQL - Database
+- SQLAlchemy - Database ORM
+- Pydantic - Data validation
 
-## Project Files
+**Frontend:**
+- React 18
+- Axios - API calls
+- React Scripts - Build tool
+
+## Project Structure
 
 ```
-├── main.py          # API routes and main logic
-├── models.py        # Pydantic models for validation
-├── db_models.py     # Database table definitions
-└── db_config.py     # Database connection
+FastAPI_Demo/
+├── main.py          # API routes
+├── models.py        # Pydantic schemas
+├── db_models.py     # Database models
+├── db_config.py     # DB connection
+├── .gitignore
+├── README.md
+└── frontend/
+    ├── public/
+    ├── src/
+    └── package.json
 ```
 
-## Database Structure
+## Database Schema
 
 **Product Table:**
-- `id` - Product ID (number)
-- `name` - Product name (text)
-- `description` - Product details (text)
-- `price` - Price (decimal)
-- `quantity` - Stock quantity (number)
+- `id` - Product ID
+- `name` - Product name
+- `description` - Product details
+- `price` - Price
+- `quantity` - Stock quantity
 
 ## API Endpoints
 
-**Get all products:**
-```
-GET /products
-```
+Base URL: `http://localhost:8000`
 
-**Get one product:**
-```
-GET /products/{id}
-```
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | Welcome message |
+| GET | `/products` | Get all products |
+| GET | `/products/{id}` | Get product by ID |
+| POST | `/products` | Create new product |
+| PUT | `/products/{id}` | Update product |
+| DELETE | `/products/{id}` | Delete product |
 
-**Add new product:**
-```
+**Example API Call:**
+```json
 POST /products
-Body: {"id": 5, "name": "Mouse", "description": "Wireless mouse", "price": 29.99, "quantity": 50}
-```
-
-**Update product:**
-```
-PUT /products/{id}
-Body: {"id": 1, "name": "Updated Name", "description": "New desc", "price": 899.99, "quantity": 5}
-```
-
-**Delete product:**
-```
-DELETE /products/{id}
+{
+  "id": 5,
+  "name": "Mouse",
+  "description": "Wireless mouse",
+  "price": 29.99,
+  "quantity": 50
+}
 ```
 
 ## Setup Instructions
 
-### 1. Install Python packages
+### Backend Setup
+
+1. **Install Python dependencies:**
 ```bash
 pip install fastapi uvicorn sqlalchemy psycopg2-binary pydantic
 ```
 
-### 2. Create PostgreSQL database
+2. **Create PostgreSQL database:**
 ```bash
 psql -U postgres
 CREATE DATABASE inventorydb;
 \q
 ```
 
-### 3. Update database password
-Open `db_config.py` and change the password if needed:
+3. **Update database password in `db_config.py`:**
 ```python
 db_url = "postgresql://postgres:YOUR_PASSWORD@localhost:5432/inventorydb"
 ```
 
-### 4. Run the application
+4. **Run backend:**
 ```bash
 uvicorn main:app --reload
 ```
+Backend runs at: http://localhost:8000
 
-### 5. Test it
-- API runs at: http://localhost:8000
-- Interactive docs: http://localhost:8000/docs
+### Frontend Setup
+
+1. **Install Node.js dependencies:**
+```bash
+cd frontend
+npm install
+```
+
+2. **Start frontend:**
+```bash
+npm start
+```
+Frontend runs at: http://localhost:3000
+
+### How It Works Together
+
+- Frontend makes API calls to backend using Axios
+- `proxy` setting in `package.json` forwards requests to `http://localhost:8000`
+- Backend handles database operations and returns JSON
+- Frontend displays data in UI
+
+## Features
+
+✅ Full CRUD operations  
+✅ React-based user interface  
+✅ REST API with FastAPI  
+✅ PostgreSQL database persistence  
+✅ Auto-creates tables on startup  
+✅ Includes sample data  
+✅ CORS enabled for frontend  
 
 ## Sample Data
 
-When you first run the app, it automatically adds 4 products:
-- Laptop - $999.99
-- Smartphone - $699.99
-- Headphones - $199.99
-- Monitor - $399.99
-
-## What Works
-
-✅ Create, read, update, delete products  
-✅ Data is saved in PostgreSQL database  
-✅ Auto-creates tables on startup  
-✅ Returns proper error messages  
+App starts with 4 products:
+- Laptop - $999.99 (10 in stock)
+- Smartphone - $699.99 (25 in stock)
+- Headphones - $199.99 (15 in stock)
+- Monitor - $399.99 (8 in stock)
 
 ## Known Issues
 
-⚠️ Database password is in the code (should use environment variables)  
-⚠️ You have to manually provide product ID when creating  
-⚠️ No pagination (returns all products at once)  
-⚠️ Price and quantity can be negative  
+⚠️ Database credentials hardcoded in code  
+⚠️ Manual ID entry required when creating products  
+⚠️ No pagination (loads all products)  
+⚠️ No input validation for negative prices/quantities  
+⚠️ CORS allows all origins (development mode)  
 
-## Possible Improvements
+## Future Improvements
 
-- Use environment variables for database credentials
+- Environment variables for sensitive data
 - Auto-generate product IDs
-- Add search and filter options
-- Add pagination for large product lists
-- Add product categories
-- Add timestamps (created_at, updated_at)
+- Add search and filter functionality
+- Pagination for large datasets
+- Image upload for products
+- User authentication
+- Form validation on frontend
+- Loading states and error messages in UI
+
+## API Documentation
+
+Once backend is running, visit:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
 ---
 
-Made with FastAPI 🚀
+Built with React + FastAPI 🚀
