@@ -1,9 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, Boolean
-from sqlalchemy.orm import declarative_base
+from database import Base
 
-Base = declarative_base()
 # Jo classes Base inherit karegi, wo DB tables hain
-
 class Product(Base):
     __tablename__ = "product"
 
