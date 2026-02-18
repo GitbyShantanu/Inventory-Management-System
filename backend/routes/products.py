@@ -53,7 +53,7 @@ def save_product(product: ProductCreate, db: Session = Depends(get_db)):
 
 
 # Put method to update a product
-@router.put("/products/{product_id}")
+@router.put("/products/{product_id}", response_model=ProductResponse)
 def update_product(product_id : int, product : ProductUpdate, db: Session = Depends(get_db)):
     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if db_product:

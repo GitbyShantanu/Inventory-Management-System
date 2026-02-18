@@ -20,4 +20,3 @@ engine = create_engine(DATABASE_URL)
 session = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 Base = declarative_base()
-Base.metadata.create_all(engine) # Takes metadata from Base and create all tables.
