@@ -19,7 +19,10 @@ dist/
 .idea/
 
 # Node
+frontend/
 node_modules/
+build/
+
 
 # Logs
 *.log
