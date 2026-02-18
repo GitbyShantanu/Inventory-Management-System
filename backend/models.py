@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, Boolean
-from database import Base
+from backend.database import Base
 
 # Jo classes Base inherit karegi, wo DB tables hain
 class Product(Base):
