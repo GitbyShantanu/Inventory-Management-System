@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routes.products import router as product_router
+from backend.database import Base, engine
 
 app = FastAPI()
+
+Base.metadata.create_all(engine) # Takes metadata from Base and create all tables.
 
 app.add_middleware(
     CORSMiddleware,
