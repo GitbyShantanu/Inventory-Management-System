@@ -20,7 +20,7 @@ class ProductUpdate(BaseModel):
 class ProductResponse(BaseModel):
     id: int
     name: str
-    description: str
+    description: str | None = None
     price: float
     quantity: int
 
