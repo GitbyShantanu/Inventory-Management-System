@@ -53,7 +53,7 @@ def save_product(product: ProductCreate, db: Session = Depends(get_db)):
 
 
 # Put method to update a product
-@router.put("/products/{product_id}", response_model=ProductResponse)
+@router.put("/{product_id}", response_model=ProductResponse)
 def update_product(product_id : int, product : ProductUpdate, db: Session = Depends(get_db)):
     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if db_product:
@@ -68,7 +68,7 @@ def update_product(product_id : int, product : ProductUpdate, db: Session = Depe
         raise HTTPException(status_code=404, detail=f"Product with id: {product_id} not found")
 
 
-@router.patch("/products/{product_id}", response_model=ProductResponse)
+@router.patch("/{product_id}", response_model=ProductResponse)
 def patch_product(product_id: int, product: ProductUpdate, db: Session = Depends(get_db)):
     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not db_product:
@@ -87,7 +87,7 @@ def patch_product(product_id: int, product: ProductUpdate, db: Session = Depends
 
 
 # Delete method to delete a product
-@router.delete("/products/{product_id}", response_model=ProductResponse)
+@router.delete("/{product_id}", response_model=ProductResponse)
 def delete_prod_by_id(product_id: int, db: Session = Depends(get_db)):
     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not db_product:
