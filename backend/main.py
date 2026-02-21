@@ -9,8 +9,7 @@ Base.metadata.create_all(engine) # Takes metadata from Base and create all table
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://inventory-management-system-cjr4.onrender.com",
-                   "http://127.0.0.1:5500"],
+    allow_origins=["http://127.0.0.1:5500"],
     allow_methods=["*"],
     allow_headers=["*"],
     allow_credentials=True,
