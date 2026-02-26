@@ -6,9 +6,8 @@
 
 ## 🚀 Live API
 
-🔗 **Base URL:** `https://your-app.onrender.com`  
-📖 **Swagger Docs:** `https://your-app.onrender.com/docs`  
-📄 **ReDoc:** `https://your-app.onrender.com/redoc`
+🔗 **Base URL:** `https://inventory-management-system-cjr4.onrender.com`  
+📖 **Swagger Docs:** `https://inventory-management-system-cjr4.onrender.com/docs`
 
 ---
 
