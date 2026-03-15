@@ -1,25 +1,32 @@
 body {
+    min-height: 100vh;
+    background: linear-gradient(135deg,#1d2671,#c33764);
     font-family: Arial;
-    background: linear-gradient(135deg, #1d2671, #c33764);
-    min-height: 100vh;   
-    padding: 20px;
-}
-
-h1 {
-    color: white;
-    margin-bottom: 30px;
-    font-weight: bolder;
 }
 
 .card {
-    border-radius: 10px;
+    border-radius: 12px;
+}
+
+h1 {
+    font-weight: bolder;
+    letter-spacing: 1px;
+}
+
+h5 {
+    font-weight: bold;
+    color: blueviolet;
 }
 
 label {
     font-weight: bold;
 }
 
-h5 {
-    font-weight: bold;
-    color: blue;
+.table-container {
+    height: 400px;
+    overflow-y: auto;
+}
+
+.table-container table {
+    margin-bottom: 0;
 }
