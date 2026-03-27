@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routes.products import router as product_router
 from backend.database import Base, engine
+from backend.exceptions import AppException, app_exception_handler, generic_exception_handler
+
 
 app = FastAPI()
 
@@ -14,6 +16,9 @@ app.add_middleware(
     allow_headers=["*"],
     allow_credentials=True,
 )
+
+app.add_exception_handler(AppException, app_exception_handler)
+app.add_exception_handler(Exception, generic_exception_handler)
 
 
 @app.get("/", tags=["Root"])

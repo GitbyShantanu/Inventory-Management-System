@@ -1,43 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Inventory Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
     <div class="container py-4">
         <!-- <h1 class="text-center">Product Inventory</h1> -->
-        
-        <h1 class="text-center text-white">📦 Product Inventory Manager </h1>   
+
+        <h1 class="text-center text-white">📦 Product Inventory Manager </h1>
 
         <div class="row mt-4">
 
             <!-- FORM -->
-            <div class="col-md-3"> 
-                <div class="card p-3"> 
+            <div class="col-md-3">
+                <div class="card p-3">
                     <h5 class="mb-2 mb-3">Add Product</h5>
 
                     <form id="productForm" autocomplete="off">
 
                         <input type="hidden" id="productId">
-                        
-                        <div class="mb-3"> 
-                            <label class="form-label">Product Name:</label>
-                            <input type="text" id="productName" class="form-control" placeholder="Product name" required>
-                        </div>
 
+                        
                         <div class="mb-3">
-                            <label class="form-label">Description:</label> 
-                            <input type="text" id="description" class="form-control" placeholder="Product description" required>
+                            <label class="form-label">Product Name:</label>
+                            <input type="text" id="productName" class="form-control" placeholder="Product name"
+                            required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Description:</label>
+                            <input type="text" id="description" class="form-control" placeholder="Product description"
+                                required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Price:</label>
-                            <input type="number" id="price" class="form-control" min="0" step="0.01" placeholder="Price" required>
+                            <input type="number" id="price" class="form-control" min="0" step="0.01" placeholder="Price"
+                                required>
                         </div>
 
                         <div class="mb-3">
@@ -45,7 +51,7 @@
                             <input type="number" id="qty" class="form-control" min="0" placeholder="Quantity" required>
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100" id="submit">Save</button>
+                        <button type="submit" class="btn btn-success w-100" id="submit">Save</button>
                         <input class="btn btn-secondary w-100 mt-2" type="reset" value="Reset" onclick="clearForm()">
                     </form>
                 </div>
@@ -56,30 +62,67 @@
                 <div class="card p-3">
                     <h5>Product List</h5>
 
-                    <input type="text" id="searchInput" class="form-control mb-2" placeholder="Search product by name...">
-                    
+                    <input type="text" id="searchInput" class="form-control mb-2" 
+                        placeholder="Search product by name...">
+
                     <div class="table-container">
-                        <table class="table table-striped table-responsive table-hover mt-3">
+                        <table class="table table-striped table-responsive table-hover mt-2">
                             <thead class="table-dark">
                                 <tr>
                                     <th>ID</th>
-                                    <th>Name</th>
                                     <th>Description</th>
+                                    <th>Name</th>
                                     <th>Price</th>
                                     <th>Quantity</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            
+
                             <tbody id="tableBody"></tbody>
-                            
+
                         </table>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+      <div id="modalOverlay" class="overlay">
+        <div class="custom-modal">
+
+            <h4 class="mb-3 text-center">Edit Product</h4>
+
+            <input type="hidden" id="idField"/> <br>
+
+            <div class="mb-2">
+                <label class="form-label">Product Name</label>
+                <input type="text" id="editName" class="form-control">
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label">Description</label>
+                <textarea id="editDesc" class="form-control"></textarea>
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label">Price</label>
+                <input type="number" id="editPrice" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Quantity</label>
+                <input type="number" id="editQty" class="form-control">
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <button class="btn btn-primary w-50 me-2" onclick="updateProduct()">Update</button>
+                <button class="btn btn-secondary w-50" onclick="closeModal()">Cancel</button>
+            </div>
 
         </div>
     </div>
+
 
     <script src="script.js"></script>
 </body>

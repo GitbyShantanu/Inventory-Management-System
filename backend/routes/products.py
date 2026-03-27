@@ -1,5 +1,9 @@
+from sqlalchemy.exc import IntegrityError
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+
+from backend.exceptions import AppException
 from backend.schemas import ProductResponse, ProductCreate, ProductUpdate
 from backend.database import session
 import backend.models as models
@@ -37,7 +41,7 @@ def get_all_products(
 def get_product_by_id(product_id: int, db: Session = Depends(get_db)):
     prod = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not prod:
-        raise HTTPException(status_code=404, detail="Product not found")
+        raise AppException("Product not found", 404)
 
     return prod
 
@@ -45,53 +49,73 @@ def get_product_by_id(product_id: int, db: Session = Depends(get_db)):
 # Post method to save a product
 @router.post("/", response_model=ProductResponse)
 def save_product(product: ProductCreate, db: Session = Depends(get_db)):
+    product.name = product.name.strip().title()
     db_product = models.Product(**product.model_dump())
-    db.add(db_product)
-    db.commit()
-    db.refresh(db_product)  #Reload the object from the database to capture updated auto-generated fields (like ID).
-    return db_product
+    try:
+        db.add(db_product)
+        db.commit()
+        db.refresh(db_product)  #Reload the object from the database to capture updated auto-generated fields (like ID).
+        return db_product
+
+    except IntegrityError:
+        db.rollback()
+        raise AppException(f"Product with the name {product.name} already exists", 409)
 
 
 # Put method to update a product
 @router.put("/{product_id}", response_model=ProductResponse)
 def update_product(product_id : int, product : ProductUpdate, db: Session = Depends(get_db)):
     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
-    if db_product:
+    if not db_product:
+        raise AppException(f"Product with id: {product_id} not found", 404)
+
+    try:
+        product.name = product.name.strip().title()
+
         db_product.name = product.name
         db_product.description = product.description
         db_product.price = product.price
         db_product.quantity = product.quantity
         db.commit()
-        # Transform DB object into API response model (DTO)
+        db.refresh(db_product)
         return db_product
-    else:
-        raise HTTPException(status_code=404, detail=f"Product with id: {product_id} not found")
+
+    except IntegrityError:
+        db.rollback()
+        raise AppException(f"Product with the name {product.name} already exists", 409)
 
 
 @router.patch("/{product_id}", response_model=ProductResponse)
 def patch_product(product_id: int, product: ProductUpdate, db: Session = Depends(get_db)):
     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not db_product:
-        raise HTTPException(status_code=404, detail=f"Product with id {product_id} not found")
+        raise AppException(f"Product with id: {product_id} not found", 404)
 
-    # Get dict of only the fields that the user actually sent in RequestBody
-    update_data = product.model_dump(exclude_unset=True)
+    try:
+        if product.name:
+            product.name = product.name.strip().title()
 
-    # Iterate over key-value pairs using .items() to access both directly
-    for key, value in update_data.items():
-        setattr(db_product, key, value)  # Update db obj fields dynamically with only patched keys values eg. db_prod.price(key) = 1200(value)
+        # Get dict of only the fields that the user actually sent in RequestBody
+        update_data = product.model_dump(exclude_unset=True)
 
-    db.commit()  # Reload the object from the database to capture updated auto-generated fields (like ID).
-    db.refresh(db_product)
-    return db_product
+        for key, value in update_data.items():
+            setattr(db_product, key, value)
+
+        db.commit()
+        db.refresh(db_product)
+        return db_product
+
+    except IntegrityError:
+        db.rollback()
+        raise AppException(f"Product with the name {product.name} already exists", 409)
 
 
 # Delete method to delete a product
 @router.delete("/{product_id}", response_model=ProductResponse)
-def delete_prod_by_id(product_id: int, db: Session = Depends(get_db)):
+def delete_product_by_id(product_id: int, db: Session = Depends(get_db)):
     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not db_product:
-        raise HTTPException(status_code=404, detail=f"Product with id {product_id} not found")
+        raise AppException(f"Product with id: {product_id} not found", 404)
 
     db.delete(db_product)
     db.commit()
