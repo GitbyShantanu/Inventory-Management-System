@@ -25,7 +25,23 @@ function handleError(status) {
     if (status === 405) return "Method not allowed (405)";
     if (status === 422) return "Validation error (422)";
     if (status === 500) return "Server error (500)";
+    if (status === 400) return "Bad Request (400)";
+    if (status === 409) return "Name already exists (409)";
     return `Unexpected error (${status})`;
+}
+
+
+// ---------------- TOAST ----------------
+function showToast(message, type = "danger") {
+    const toastEl = document.getElementById("toastBox");
+    const msg = document.getElementById("toastMessage");
+
+    msg.textContent = message;
+
+    toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
 }
 
 
@@ -54,15 +70,19 @@ overlay.addEventListener("click", (e) => {
 async function loadProducts() {
     try {
         const res = await fetch(`${API}/?limit=100`);
-        if (!res.ok) throw new Error(handleError(res.status));
+
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.message || handleError(res.status));
+        }
 
         products = await res.json();
         renderTable(products);
+        showToast("Products loaded successfully", "success");
 
-        console.log("Products loaded...");
     } catch (error) {
         console.error(error);
-        alert("Failed to load products");
+        showToast("Failed to load products: " + error.message, "danger");
     }
 }
 
@@ -126,17 +146,21 @@ document.querySelector("#productForm").addEventListener("submit", async (e) => {
             body: JSON.stringify(body)
         });
 
-        if (!res.ok) throw new Error(handleError(res.status));
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.message || handleError(res.status));
+        }
 
         const newProduct = await res.json();
         console.log("Product created:", newProduct);
-        alert("Product added successfully");
+        showToast("Product added successfully", "success");
+
         e.target.reset();
         loadProducts();
 
     } catch (error) {
         console.error(error);
-        alert("Failed to create product");
+        showToast("Failed to create product: "+error.message, "danger");
     }
 });
 
@@ -159,18 +183,21 @@ async function updateProduct() {
             body: JSON.stringify(body)
         });
 
-        if (!res.ok) throw new Error(handleError(res.status));
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.message || handleError(res.status));
+        }
 
         const updatedProduct = await res.json();
         console.log("Product updated:", updatedProduct);
-        alert("Product updated successfully");
+        showToast("Product updated successfully", "success");
         
         closeModal();
         loadProducts();
 
     } catch (error) {
         console.error(error);
-        alert("Failed to update product");
+        showToast("Failed to update product: " + error.message, "danger");
     }
 }
 
@@ -183,16 +210,19 @@ async function deleteProduct(id) {
             method: "DELETE"
         });
 
-        if (!res.ok) throw new Error(handleError(res.status));
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.message || handleError(res.status));
+        }
 
         const result = await res.json();
         console.log("Product deleted:", result);
-        alert("Product deleted successfully");
+        showToast("Product deleted successfully", "success");
         loadProducts();
 
     } catch (error) {
         console.error(error);
-        alert("Failed to delete product");
+        showToast("Failed to delete product: " + error.message, "danger");
     }
 }
 
