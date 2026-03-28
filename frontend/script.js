@@ -72,13 +72,13 @@ async function loadProducts() {
         const res = await fetch(`${API}/?limit=100`);
 
         if (!res.ok) {
-            const errData = await res.json();
-            throw new Error(errData.message || handleError(res.status));
+            const errData = await res.json().catch(() => null); // res may not always return json (e.g. 500 error), so catch parsing errors and return null instead 
+            throw new Error((errData && errData.message) || handleError(res.status)); // if errData is null, then errData.message would throw an error, so we check if errData exists first before trying to access its message property. If errData is null, we skip accessing message and just call handleError with the status code. This prevents our error handling from breaking when the response doesn't contain valid JSON.
         }
 
         products = await res.json();
         renderTable(products);
-        showToast("Products loaded successfully", "success");
+        console.log("Products loaded:", products);
 
     } catch (error) {
         console.error(error);
@@ -147,9 +147,9 @@ document.querySelector("#productForm").addEventListener("submit", async (e) => {
         });
 
         if (!res.ok) {
-            const errData = await res.json();
-            throw new Error(errData.message || handleError(res.status));
-        }
+            const errData = await res.json().catch(() => null);  
+            throw new Error((errData && errData.message) || handleError(res.status)); 
+        } 
 
         const newProduct = await res.json();
         console.log("Product created:", newProduct);
@@ -184,8 +184,8 @@ async function updateProduct() {
         });
 
         if (!res.ok) {
-            const errData = await res.json();
-            throw new Error(errData.message || handleError(res.status));
+            const errData = await res.json().catch(() => null);  
+            throw new Error((errData && errData.message) || handleError(res.status)); 
         }
 
         const updatedProduct = await res.json();
@@ -211,8 +211,8 @@ async function deleteProduct(id) {
         });
 
         if (!res.ok) {
-            const errData = await res.json();
-            throw new Error(errData.message || handleError(res.status));
+            const errData = await res.json().catch(() => null);  
+            throw new Error((errData && errData.message) || handleError(res.status)); 
         }
 
         const result = await res.json();
@@ -238,9 +238,12 @@ function clearForm() {
 searchInput.addEventListener("input", () => {
     const value = searchInput.value.toLowerCase();
 
-    const filtered = products.filter(p =>
-        p.name.toLowerCase().includes(value)
-    );
+    const filtered = products.filter(p => {
+        return p.name.toLowerCase().includes(value) ||
+               (p.description && p.description.toLowerCase().includes(value)) || // we check if description exists before trying to call toLowerCase on it
+               p.id.toString().includes(value) ||
+               p.price.toString().includes(value);
+    });
 
     renderTable(filtered);
 });
