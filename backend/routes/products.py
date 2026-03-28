@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.exceptions import AppException
+from backend.logging_config import logger
 from backend.schemas import ProductResponse, ProductCreate, ProductUpdate
 from backend.database import session
 import backend.models as models
@@ -34,6 +35,7 @@ def get_all_products(
 
     start = (page - 1) * limit
     end = start + limit
+    # logger.info(f"Retrieved {len(products)} products (page {page}, limit {limit})")
     return [p for p in products[start:end]]
 
 
@@ -43,6 +45,7 @@ def get_product_by_id(product_id: int, db: Session = Depends(get_db)):
     if not prod:
         raise AppException("Product not found", 404)
 
+    # logger.info(f"Product retrieved: {prod.id} - {prod.name}")
     return prod
 
 
@@ -55,6 +58,7 @@ def save_product(product: ProductCreate, db: Session = Depends(get_db)):
         db.add(db_product)
         db.commit()
         db.refresh(db_product)  #Reload the object from the database to capture updated auto-generated fields (like ID).
+        logger.info(f"Product created: {db_product.id} - {db_product.name}")
         return db_product
 
     except IntegrityError:
@@ -78,6 +82,7 @@ def update_product(product_id : int, product : ProductUpdate, db: Session = Depe
         db_product.quantity = product.quantity
         db.commit()
         db.refresh(db_product)
+        logger.info(f"Product updated: {db_product.id} - {db_product.name}")
         return db_product
 
     except IntegrityError:
@@ -103,6 +108,7 @@ def patch_product(product_id: int, product: ProductUpdate, db: Session = Depends
 
         db.commit()
         db.refresh(db_product)
+        logger.info(f"Product updated: {db_product.id} - {db_product.name}")
         return db_product
 
     except IntegrityError:
@@ -119,6 +125,7 @@ def delete_product_by_id(product_id: int, db: Session = Depends(get_db)):
 
     db.delete(db_product)
     db.commit()
+    logger.info(f"Product deleted: {db_product.id} - {db_product.name}")
     return db_product
 
 

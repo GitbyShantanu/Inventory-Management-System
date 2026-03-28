@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.routes.products import router as product_router
 from backend.database import Base, engine
 from backend.exceptions import AppException, app_exception_handler, generic_exception_handler
-
+from backend.logging_config import logger
 
 app = FastAPI()
 
@@ -17,12 +17,14 @@ app.add_middleware(
     allow_credentials=True,
 )
 
+# Registering custom and generic exception handlers
 app.add_exception_handler(AppException, app_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 
 
 @app.get("/", tags=["Root"])
 def greet():
+    logger.info("Root endpoint hit")
     return "Welcome to Inventory Management System"
 
 
