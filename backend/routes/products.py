@@ -1,28 +1,22 @@
 from sqlalchemy.exc import IntegrityError
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
+from backend.auth_config import get_current_user
+from backend.database import get_db
 from backend.exceptions import AppException
 from backend.logging_config import logger
 from backend.schemas import ProductResponse, ProductCreate, ProductUpdate
-from backend.database import session
 import backend.models as models
+
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
-
-def get_db():
-    db = session()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
 # Get all products
-@router.get("/", response_model=list[ProductResponse])
+@router.get("/", response_model=list[ProductResponse], status_code=status.HTTP_200_OK)
 def get_all_products(
+    current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
     search: str | None = None,
     page: int = 1,
@@ -39,8 +33,12 @@ def get_all_products(
     return [p for p in products[start:end]]
 
 
-@router.get("/{product_id}", response_model=ProductResponse)
-def get_product_by_id(product_id: int, db: Session = Depends(get_db)):
+@router.get("/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK)
+def get_product_by_id(
+        product_id: int,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user),
+):
     prod = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not prod:
         raise AppException("Product not found", 404)
@@ -50,8 +48,12 @@ def get_product_by_id(product_id: int, db: Session = Depends(get_db)):
 
 
 # Post method to save a product
-@router.post("/", response_model=ProductResponse)
-def save_product(product: ProductCreate, db: Session = Depends(get_db)):
+@router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
+def save_product(
+        product: ProductCreate,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
     product.name = product.name.strip().title()
     db_product = models.Product(**product.model_dump())
     try:
@@ -67,8 +69,13 @@ def save_product(product: ProductCreate, db: Session = Depends(get_db)):
 
 
 # Put method to update a product
-@router.put("/{product_id}", response_model=ProductResponse)
-def update_product(product_id : int, product : ProductUpdate, db: Session = Depends(get_db)):
+@router.put("/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK)
+def update_product(
+        product_id : int,
+        product : ProductUpdate,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user),
+):
     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not db_product:
         raise AppException(f"Product with id: {product_id} not found", 404)
@@ -90,8 +97,13 @@ def update_product(product_id : int, product : ProductUpdate, db: Session = Depe
         raise AppException(f"Product with the name {product.name} already exists", 409)
 
 
-@router.patch("/{product_id}", response_model=ProductResponse)
-def patch_product(product_id: int, product: ProductUpdate, db: Session = Depends(get_db)):
+@router.patch("/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK)
+def patch_product(
+        product_id: int,
+        product: ProductUpdate,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user),
+):
     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not db_product:
         raise AppException(f"Product with id: {product_id} not found", 404)
@@ -117,8 +129,12 @@ def patch_product(product_id: int, product: ProductUpdate, db: Session = Depends
 
 
 # Delete method to delete a product
-@router.delete("/{product_id}", response_model=ProductResponse)
-def delete_product_by_id(product_id: int, db: Session = Depends(get_db)):
+@router.delete("/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK)
+def delete_product_by_id(
+        product_id: int,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user),
+):
     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not db_product:
         raise AppException(f"Product with id: {product_id} not found", 404)

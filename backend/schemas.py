@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
 
-
 # For creating a new product (POST)
 class ProductCreate(BaseModel):
     name: str
@@ -20,10 +19,44 @@ class ProductUpdate(BaseModel):
 class ProductResponse(BaseModel):
     id: int
     name: str
-    description: str | None
+    description: Optional[str] = None
     price: float
     quantity: int
 
-    class Config:
-        from_attributes: True
+    model_config = {
+        "from_attributes": True
+    }
+
+
+# For creating a new user
+class UserCreate(BaseModel):
+    name: Optional[str] = None
+    username: str
+    password: str
+    email: str
+
+# For logging in
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+# For updating an existing user
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    username: Optional[str] = None
+    password: Optional[str] = None
+    email: Optional[str] = None
+
+# For returning user data
+class UserResponse(BaseModel):
+    id: int
+    name: Optional[str] = None
+    username: str
+    email: str
+
+    model_config = {
+        "from_attributes": True
+    }
+
+
 

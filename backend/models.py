@@ -11,10 +11,13 @@ class Product(Base):
     price = Column(Float, nullable=False)
     quantity = Column(Integer, nullable=False)
 
+
 class User(Base):
-    __tablename__ = "user"
+    __tablename__ = "user_table"
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True, nullable=False)
+    name = Column(String)
+    username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
-    is_active = Column(Boolean, default=True)
+    email = Column(String)
+

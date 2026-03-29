@@ -18,10 +18,10 @@ dist/
 .vscode/
 .idea/
 
-
 # Logs
 *.log
 
 # OS files
 .DS_Store
 Thumbs.db
+/frontend/Images/
