@@ -16,6 +16,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
     # db_user = models.User(user.model_dump()) # why this dont work : model and dto password field name mismatch
+
     db_user = models.User(
         name=user.name,
         username=user.username.strip().lower(),
@@ -40,10 +41,12 @@ def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
 
     # if user exists and password matches
     if db_user and verify_password(user_credentials.password, db_user.hashed_password):
-        # create access token
+
+        # create access token by passing user id and username as dict in payload and return bearer access token.
         token = create_access_token({
             "user_id": db_user.id,
-            "username": db_user.username
+            "username": db_user.username,
+            "email": db_user.email
         })
 
         logger.info(f"User logged in: {db_user.username}")

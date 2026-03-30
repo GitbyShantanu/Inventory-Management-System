@@ -1,5 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+
+from backend.auth_config import get_current_user
 from backend.routes.products import router as product_router
 from backend.routes.users import router as user_router
 from backend.routes.auth import router as auth_router
@@ -36,5 +38,5 @@ def greet():
 
 # IMPORTANT: includes api endpoints from routes
 app.include_router(auth_router)
-app.include_router(product_router)
+app.include_router(product_router, dependencies=[Depends(get_current_user)])
 app.include_router(user_router)

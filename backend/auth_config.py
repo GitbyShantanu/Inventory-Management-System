@@ -1,3 +1,6 @@
+import os
+
+from dotenv import load_dotenv
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from fastapi import Depends
@@ -7,8 +10,10 @@ from backend.database import session
 import backend.models as models
 from backend.exceptions import AppException
 
-SECRET_KEY = "mysecret"
-ALGORITHM = "HS256"
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer(auto_error=True)
