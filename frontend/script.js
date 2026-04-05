@@ -83,6 +83,14 @@ async function loadProducts() {
     } catch (error) {
         console.error(error);
         showToast("Failed to load products: " + error.message, "danger");
+        table.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-4 text-danger">
+                    <i class="bi bi-exclamation-triangle fs-4 d-block mb-2"></i>
+                    Failed to connect to the server.
+                </td>
+            </tr>
+        `;
     }
 }
 
@@ -90,6 +98,19 @@ async function loadProducts() {
 // ---------------- RENDER TABLE ----------------
 function renderTable(data) { 
     table.innerHTML = "";
+
+    // if no products, show empty state
+    if (data.length === 0) { 
+        table.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox fs-4 d-block mb-2"></i>
+                    No products found
+                </td>
+            </tr>
+        `;
+        return;
+    }
 
     data.forEach(p => {
         const row = document.createElement("tr");
@@ -133,11 +154,32 @@ document.querySelector("#productForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const body = {
-        name: nameField.value,
-        description: descriptionField.value,
-        price: priceField.value,
-        quantity: qtyField.value
+        name: nameField.value.trim(),
+        description: descriptionField.value.trim(),
+        price: parseFloat(priceField.value),
+        quantity: parseInt(qtyField.value)
     };
+
+    // Frontend Validation
+    if (!body.name || !body.description) {
+        showToast("Please enter a valid name and description.", "warning");
+        return;
+    }
+    if (isNaN(body.price) || body.price <= 0) {
+        showToast("Price must be greater than 0.", "warning");
+        return;
+    }
+    if (isNaN(body.quantity) || body.quantity < 0) { //we allow quantity to be 0, but not negative
+        showToast("Quantity cannot be negative.", "warning");
+        return;
+    }
+
+    // Disable submit button and show loading state
+    const submitBtn = document.getElementById("submit");
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Saving...';
 
     try {
         const res = await fetch(API, {
@@ -147,7 +189,7 @@ document.querySelector("#productForm").addEventListener("submit", async (e) => {
         });
 
         if (!res.ok) {
-            const errData = await res.json().catch(() => null);  
+            const errData = await res.json().catch(() => null);  // res may not always return json (e.g. 500 error), so catch parsing errors and return null instead
             throw new Error((errData && errData.message) || handleError(res.status)); 
         } 
 
@@ -161,6 +203,17 @@ document.querySelector("#productForm").addEventListener("submit", async (e) => {
     } catch (error) {
         console.error(error);
         showToast("Failed to create product: "+error.message, "danger");
+        table.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-4 text-danger">
+                    <i class="bi bi-exclamation-triangle fs-4 d-block mb-2"></i>
+                    Failed to connect to the server.
+                </td>
+            </tr>
+        `;
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
     }
 });
 
@@ -170,11 +223,25 @@ async function updateProduct() {
     const id = idField.value;
 
     const body = {
-        name: editName.value,
-        description: editDesc.value,
-        price: editPrice.value,
-        quantity: editQty.value
+        name: editName.value.trim(),
+        description: editDesc.value.trim(),
+        price: parseFloat(editPrice.value),
+        quantity: parseInt(editQty.value)
     };
+
+    // Frontend Validation
+    if (!body.name || !body.description) {
+        showToast("Please enter a valid name and description.", "warning");
+        return;
+    }
+    if (isNaN(body.price) || body.price <= 0) {
+        showToast("Price must be greater than 0.", "warning");
+        return;
+    }
+    if (isNaN(body.quantity) || body.quantity < 0) { 
+        showToast("Quantity cannot be negative.", "warning");
+        return;
+    }
 
     try {
         const res = await fetch(`${API}/${id}`, {
