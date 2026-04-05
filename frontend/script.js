@@ -249,6 +249,37 @@ searchInput.addEventListener("input", () => {
 });
 
 
+// ---------------- THEME TOGGLE ----------------
+const themeToggle = document.getElementById("themeToggle");
+const themeIcon = document.getElementById("themeIcon");
+
+function setTheme(theme) {
+    // Set Bootstrap theme attribute
+    document.documentElement.setAttribute("data-bs-theme", theme);
+    localStorage.setItem("theme", theme); // Save preference
+    
+    if (theme === "dark") {
+        themeIcon.className = "bi bi-sun-fill fs-5";
+    } else {
+        themeIcon.className = "bi bi-moon-fill fs-5";
+    }
+}
+
+const savedTheme = localStorage.getItem("theme") || "light";
+setTheme(savedTheme);
+
+themeToggle.addEventListener("click", () => {
+    const currentTheme = document.documentElement.getAttribute("data-bs-theme");
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    
+    themeIcon.classList.add("rotate-effect");
+    
+    setTimeout(() => {
+        setTheme(newTheme);
+        themeIcon.classList.remove("rotate-effect");
+    }, 150);
+});
+
 // ---------------- INIT ----------------
 loadProducts();
 console.log("App started...");

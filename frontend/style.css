@@ -1,11 +1,38 @@
 body {
     min-height: 100vh;
-    background: linear-gradient(135deg,#1d2671,#c33764);
-
+    /* background: linear-gradient(135deg,#1d2671,#c33764); */
     /* background: url("https://images.unsplash.com/photo-1587293852726-70cdb56c2866?q=80&w=1172&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D") no-repeat center center fixed; */
+
+    background: var(--bg-gradient, linear-gradient(135deg, #4f46e5, #0ea5e9));
+    background-attachment: fixed;
     
     background-size: cover;
     font-family: Arial;
+    transition: background 0.3s ease;
+    position: relative;
+    z-index: 0;
+}
+
+/* Dark mode overlay to dim and blur the background */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    z-index: -1;
+    transition: background 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease;
+    pointer-events: none;
+}
+
+[data-bs-theme="dark"] body::before {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
 .card {
@@ -51,7 +78,8 @@ label {
 }
 
 .custom-modal {
-  background: white;
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
   padding: 20px;
   width: 350px;
   border-radius: 10px;
@@ -69,4 +97,32 @@ label {
     transform: scale(1);
     opacity: 1;
   }
+}
+
+/* Smooth theme transition effect */
+body, .card, .custom-modal, .form-control, .table, th, td {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* Theme icon animation */
+#themeIcon {
+    display: inline-block;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.rotate-effect {
+    transform: rotate(180deg) scale(0.5);
+    opacity: 0;
+}
+
+/* Glassmorphism Navbar */
+.glass-nav {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+[data-bs-theme="dark"] .glass-nav {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }

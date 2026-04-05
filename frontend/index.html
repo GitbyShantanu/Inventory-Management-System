@@ -11,11 +11,23 @@
 </head>
 
 <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg glass-nav shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-3 text-title-uppercase tracking-wider" href="#">📦 Product Inventory Manager</a>
+            
+            <div class="d-flex align-items-center ms-auto">
+                <a href="https://github.com/GitbyShantanu/Inventory-Management-System" target="_blank" class="btn btn-outline-light border-0 shadow-none me-2" title="View Source Code">
+                    <i class="bi bi-github fs-5"></i>
+                </a>
+                <button id="themeToggle" class="btn btn-outline-light border-0 shadow-none" title="Toggle Theme">
+                    <i id="themeIcon" class="bi bi-moon-fill fs-5"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
     <div class="container py-4">
-        <!-- <h1 class="text-center">Product Inventory</h1> -->
-
-        <h1 class="text-center text-white">📦 Product Inventory Manager </h1>
-
         <div class="row mt-4">
 
             <!-- FORM -->
@@ -87,6 +99,16 @@
         </div>
     </div>
 
+    <!-- Footer -->
+    <footer class="text-center py-4 mt-5 border-top border-light border-opacity-10">
+        <div class="text-white opacity-75 small mb-1">
+            Powered by <strong class="text-white">FastAPI</strong> & <strong class="text-white">Bootstrap</strong>
+        </div>
+        <div class="text-white opacity-50 small">
+            &copy; 2026 Shantanu Deshmukh
+        </div>
+    </footer>
+
     <!-- Modal -->
     <div id="modalOverlay" class="overlay">
         <div class="custom-modal">
@@ -124,7 +146,9 @@
     </div>
 
     <!-- Toast -->
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+    <!-- <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999"> -->
+    
+    <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 9999">
         <div id="toastBox" class="toast align-items-center text-bg-danger border-0" role="alert">
             <div class="d-flex">
                 <div class="toast-body" id="toastMessage">
