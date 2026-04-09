@@ -1,3 +1,14 @@
+// DASHBOARD BOUNCER (Security)
+// If no token is found, redirect user to login page
+if (!localStorage.getItem("token")) {
+    window.location.href = "login.html";
+}
+
+// Helper function to get token from localStorage
+function getToken() {
+    return localStorage.getItem("token");
+}
+
 const API = "http://127.0.0.1:8000/products";
 
 const nameField = document.querySelector("#productName");
@@ -26,7 +37,7 @@ const pageInfo = document.getElementById("pageInfo");
 
 
 // ---------------- ERROR HANDLING ----------------
-function handleError(error, status) { // error recive when fetch itself fails (e.g. network error), status recive when we get a response but it's an error status code (e.g. 500)
+function handleError(error, status) { // error recieve when fetch itself fails (e.g. network error), status recive when we get a response but it's an error status code (e.g. 500)
     // Detect generic fetch failure (usually means server is down)
     // This must come first, as there might not be a status code for a network error
     if (error && (error.message === "Failed to fetch" || error.message.includes("NetworkError"))) {
@@ -92,9 +103,18 @@ async function loadProducts(page = 1) {
             url += `&search=${encodeURIComponent(searchQuery)}`;
         }
         
-        const res = await fetch(url); 
+        const res = await fetch(url, {
+            headers: {
+                "Authorization": `Bearer ${getToken()}`
+            }
+        }); 
 
         if (!res.ok) {
+            if (res.status === 401) { // If token has expired or is invalid
+                localStorage.removeItem("token");
+                window.location.href = "login.html?expired=true";
+                return; // Stop further execution of this function since we're redirecting the user to login page
+            }
             const errData = await res.json().catch(() => null); // res may not always return json (e.g. 500 error), so catch parsing errors and return null instead.
             throw new Error(errData?.message || handleError(null, res.status)); // Optional chaining (?.) safely attempts to read message. If errData is null, it gracefully returns undefined without crashing.
         } 
@@ -144,8 +164,8 @@ function renderTable(data) {
 
         row.innerHTML = `
             <td>${p.id}</td>
-            <td>${p.description}</td>
             <td>${p.name}</td>
+            <td>${p.description}</td>
             <td>${p.price}</td>
             <td>${p.quantity}</td>
             <td class="text-nowrap"></td>
@@ -155,16 +175,16 @@ function renderTable(data) {
 
         // EDIT
         const editBtn = document.createElement("button");
-        editBtn.className = "btn btn-warning btn-sm me-1";
+        editBtn.className = "btn btn-outline-primary btn-sm border-0 me-1 hover-lift";
         editBtn.title = "Edit";
-        editBtn.innerHTML = "<i class='bi bi-pencil-fill'></i>";    
+        editBtn.innerHTML = "<i class='bi bi-pencil-square'></i>";    
         editBtn.addEventListener("click", () => openModal(p));
 
         // DELETE
         const deleteBtn = document.createElement("button");
-        deleteBtn.className = "btn btn-danger btn-sm";
+        deleteBtn.className = "btn btn-outline-danger btn-sm border-0 hover-lift";
         deleteBtn.title = "Delete";
-        deleteBtn.innerHTML = "<i class='bi bi-trash'></i>";
+        deleteBtn.innerHTML = "<i class='bi bi-trash3'></i>";
         deleteBtn.addEventListener("click", () => deleteProduct(p.id, deleteBtn)); // pass the button element itself
 
         actionCell.appendChild(editBtn);
@@ -208,13 +228,23 @@ document.querySelector("#productForm").addEventListener("submit", async (e) => {
     submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Saving...';
 
     try {
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Artificial delay for UX presentation
+
         const res = await fetch(API, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${getToken()}`
+            },
             body: JSON.stringify(body)
         });
 
         if (!res.ok) { // server connected but returned an error status code
+            if (res.status === 401) {
+                localStorage.removeItem("token");
+                window.location.href = "login.html?expired=true";
+                return;
+            }
             const errData = await res.json().catch(() => null);  // res may not always return json (e.g. 500 error), so catch parsing errors and return null instead
             // if errorData exist, wrap its msg in Error & throw it to catch block with the message from backend, otherwise handleError will generate a message based on the status code
             throw new Error(errData?.message || handleError(null, res.status));
@@ -267,13 +297,23 @@ async function updateProduct() {
     updateBtn.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Updating...';
 
     try {
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Artificial delay for UX presentation
+
         const res = await fetch(`${API}/${id}`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${getToken()}`
+            },
             body: JSON.stringify(body)
         });
 
         if (!res.ok) {
+            if (res.status === 401) {
+                localStorage.removeItem("token");
+                window.location.href = "login.html?expired=true";
+                return;
+            }
             const errData = await res.json().catch(() => null);  
             throw new Error(errData?.message || handleError(null, res.status));
         }
@@ -304,11 +344,21 @@ async function deleteProduct(id, btn) {
     btn.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span>';
 
     try {
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Artificial delay for UX presentation
+
         const res = await fetch(`${API}/${id}`, {
-            method: "DELETE"
+            method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${getToken()}`
+            }
         });
 
         if (!res.ok) {
+            if (res.status === 401) {
+                localStorage.removeItem("token");
+                window.location.href = "login.html?expired=true";
+                return;
+            }
             const errData = await res.json().catch(() => null);  
             throw new Error(errData?.message || handleError(null, res.status));
         }
@@ -375,7 +425,7 @@ function setTheme(theme) {
 
 // On page load, set theme based on saved preference or default to light
 const savedTheme = localStorage.getItem("theme") || "light";
-setTheme(savedTheme);3
+setTheme(savedTheme);
 
 // Add click event to toggle theme
 themeToggle.addEventListener("click", () => { // When the theme toggle button is clicked, we determine the current theme by checking the data-bs-theme attribute on the root html element. We then decide what the new theme should be (if current is dark, switch to light; if current is light, switch to dark). We add a rotate effect class to the icon for a nice visual transition, and after a short delay (150ms), we call setTheme with the new theme and remove the rotate effect class.
@@ -390,6 +440,12 @@ themeToggle.addEventListener("click", () => { // When the theme toggle button is
     }, 150);
 });
 
+
+// ---------------- LOGOUT ----------------
+document.getElementById("logoutBtn").addEventListener("click", () => {
+    localStorage.removeItem("token"); 
+    window.location.href = "login.html"; 
+});
 
 // ---------------- INIT ----------------
 loadProducts();

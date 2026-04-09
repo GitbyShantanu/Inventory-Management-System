@@ -14,15 +14,34 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg glass-nav shadow-sm sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold fs-3 text-title-uppercase tracking-wider" href="#">📦 Product Inventory Manager</a>
+            <a class="navbar-brand brand-title" href="index.html">📦 Inventory Manager</a>
             
-            <div class="d-flex align-items-center ms-auto"> <!-- d-flex to align items horizontally, ms-auto to push to the right -->
-                <a href="https://github.com/GitbyShantanu/Inventory-Management-System" target="_blank" class="btn btn-outline-light border-0 shadow-none me-2" title="View Source Code">
-                    <i class="bi bi-github fs-5"></i> 
-                </a>
-                <button id="themeToggle" class="btn btn-outline-light border-0 shadow-none" title="Toggle Theme">
-                    <i id="themeIcon" class="bi bi-moon-fill fs-5"></i>
-                </button>
+            <!-- Hamburger Menu for Mobile -->
+            <button class="navbar-toggler shadow-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#dashboardNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="dashboardNav">
+                <!-- Navigation Links -->
+                <ul class="navbar-nav ms-lg-4 me-auto fw-medium">
+                    <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+                </ul>
+
+                <!-- Action Buttons -->
+                <div class="d-flex align-items-center mt-3 mt-lg-0">
+                    <a href="https://github.com/GitbyShantanu/Inventory-Management-System" target="_blank" class="btn btn-outline-light border-0 shadow-none me-2" title="View Source Code">
+                        <i class="bi bi-github fs-5"></i> 
+                    </a>
+                    <button id="themeToggle" class="btn btn-outline-light border-0 shadow-none" title="Toggle Theme">
+                        <i id="themeIcon" class="bi bi-moon-fill fs-5"></i>
+                    </button>
+                    
+                    <!-- Logout Button -->
+                    <button id="logoutBtn" class="btn btn-danger btn-sm ms-3 fw-bold shadow-sm">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
@@ -75,15 +94,15 @@
                         placeholder="Search product by id, name, description or price...">
 
                     <div class="table-container overflow-auto" style="max-height: 350px;">
-                        <table class="table table-striped table-responsive table-hover mt-2 align-middle">
+                    <table class="table table-striped table-hover mt-2 align-middle">
                             <thead class="table-dark position-sticky top-0" style="z-index: 1;">
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Description</th>
-                                    <th>Name</th>
-                                    <th>Price</th>
-                                    <th>Quantity</th>
-                                    <th>Actions</th>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Actions</th>
                                 </tr>
                             </thead>
 
