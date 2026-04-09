@@ -17,17 +17,32 @@ const editPrice = document.getElementById("editPrice");
 const editQty = document.getElementById("editQty");
 
 let products = [];
+let searchQuery = "";
+let currentPage = 1;
+const limit = 10;
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+const pageInfo = document.getElementById("pageInfo");
 
 
 // ---------------- ERROR HANDLING ----------------
-function handleError(status) {
-    if (status === 404) return "Resource not found (404)";
+function handleError(error, status) { // error recive when fetch itself fails (e.g. network error), status recive when we get a response but it's an error status code (e.g. 500)
+    // Detect generic fetch failure (usually means server is down)
+    // This must come first, as there might not be a status code for a network error
+    if (error && (error.message === "Failed to fetch" || error.message.includes("NetworkError"))) {
+        return "Server is unreachable. Please ensure the backend server is running.";
+    }
+
+    // If not a network error, then check status codes for API-specific errors
     if (status === 405) return "Method not allowed (405)";
     if (status === 422) return "Validation error (422)";
     if (status === 500) return "Server error (500)";
     if (status === 400) return "Bad Request (400)";
-    if (status === 409) return "Name already exists (409)";
-    return `Unexpected error (${status})`;
+    
+    // If we have an error object with a message (like the backend error we threw), return it
+    if (error && error.message) return error.message;
+    if (!status) return "An unexpected error occurred."; // Fallback for no status and not a network error and dont have error message. 
+    return `Unexpected error (${status})`; // Fallback for any other status codes we haven't explicitly handled
 }
 
 
@@ -40,7 +55,7 @@ function showToast(message, type = "danger") {
 
     toastEl.className = `toast align-items-center text-bg-${type} border-0`;
 
-    const toast = new bootstrap.Toast(toastEl);
+    const toast = new bootstrap.Toast(toastEl); // we are creating a new instance of the toast every time we show it, which allows us to reset the timer if the same toast is triggered multiple times in a row. If we reused the same instance, triggering the toast again while it's already visible would not reset the timer, and the toast would disappear after the original duration instead of staying visible for the full duration from the last trigger.
     toast.show();
 }
 
@@ -67,23 +82,35 @@ overlay.addEventListener("click", (e) => {
 
 
 // ---------------- LOAD PRODUCTS ----------------
-async function loadProducts() {
+async function loadProducts(page = 1) {
+    currentPage = page;
     try {
-        const res = await fetch(`${API}/?limit=100`);
+        // Construct URL with pagination and search parameters
+        let url = `${API}/?page=${currentPage}&limit=${limit}`;
+        if (searchQuery) {
+            // We use encodeURIComponent to ensure that any special characters in the search query (like spaces, &, ?, etc.) are properly encoded in the URL, preventing potential issues with the request. This is important for ensuring that the backend receives the search query correctly, especially if it contains characters that have special meanings in URLs.
+            url += `&search=${encodeURIComponent(searchQuery)}`;
+        }
+        
+        const res = await fetch(url); 
 
         if (!res.ok) {
-            const errData = await res.json().catch(() => null); // res may not always return json (e.g. 500 error), so catch parsing errors and return null instead 
-            throw new Error((errData && errData.message) || handleError(res.status)); // if errData is null, then errData.message would throw an error, so we check if errData exists first before trying to access its message property. If errData is null, we skip accessing message and just call handleError with the status code. This prevents our error handling from breaking when the response doesn't contain valid JSON.
-        }
+            const errData = await res.json().catch(() => null); // res may not always return json (e.g. 500 error), so catch parsing errors and return null instead.
+            throw new Error(errData?.message || handleError(null, res.status)); // Optional chaining (?.) safely attempts to read message. If errData is null, it gracefully returns undefined without crashing.
+        } 
 
         products = await res.json();
         renderTable(products);
         console.log("Products loaded:", products);
 
+        // Update Pagination UI
+        pageInfo.textContent = `Page ${currentPage}`;
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = products.length < limit; // Disable next if we didn't get a full page of results
     } catch (error) {
-        console.error(error);
+        console.error("Error loading products:", error);
         showToast("Failed to load products: " + error.message, "danger");
-        table.innerHTML = `
+        table.innerHTML = ` 
             <tr>
                 <td colspan="6" class="text-center py-4 text-danger">
                     <i class="bi bi-exclamation-triangle fs-4 d-block mb-2"></i>
@@ -121,25 +148,24 @@ function renderTable(data) {
             <td>${p.name}</td>
             <td>${p.price}</td>
             <td>${p.quantity}</td>
-            <td></td>
+            <td class="text-nowrap"></td>
         `;
 
         const actionCell = row.querySelector("td:last-child");
 
         // EDIT
         const editBtn = document.createElement("button");
-        editBtn.className = "btn btn-warning me-2";
-        // editBtn.innerText = "Edit";
+        editBtn.className = "btn btn-warning btn-sm me-1";
+        editBtn.title = "Edit";
         editBtn.innerHTML = "<i class='bi bi-pencil-fill'></i>";    
         editBtn.addEventListener("click", () => openModal(p));
 
         // DELETE
         const deleteBtn = document.createElement("button");
-        deleteBtn.className = "btn btn-danger";
-        // deleteBtn.innerText = "Delete";
+        deleteBtn.className = "btn btn-danger btn-sm";
+        deleteBtn.title = "Delete";
         deleteBtn.innerHTML = "<i class='bi bi-trash'></i>";
-
-        deleteBtn.addEventListener("click", () => deleteProduct(p.id));
+        deleteBtn.addEventListener("click", () => deleteProduct(p.id, deleteBtn)); // pass the button element itself
 
         actionCell.appendChild(editBtn);
         actionCell.appendChild(deleteBtn);
@@ -161,8 +187,8 @@ document.querySelector("#productForm").addEventListener("submit", async (e) => {
     };
 
     // Frontend Validation
-    if (!body.name || !body.description) {
-        showToast("Please enter a valid name and description.", "warning");
+    if (!body.name) {
+        showToast("Please enter a valid name.", "warning");
         return;
     }
     if (isNaN(body.price) || body.price <= 0) {
@@ -188,29 +214,20 @@ document.querySelector("#productForm").addEventListener("submit", async (e) => {
             body: JSON.stringify(body)
         });
 
-        if (!res.ok) {
+        if (!res.ok) { // server connected but returned an error status code
             const errData = await res.json().catch(() => null);  // res may not always return json (e.g. 500 error), so catch parsing errors and return null instead
-            throw new Error((errData && errData.message) || handleError(res.status)); 
+            // if errorData exist, wrap its msg in Error & throw it to catch block with the message from backend, otherwise handleError will generate a message based on the status code
+            throw new Error(errData?.message || handleError(null, res.status));
         } 
 
         const newProduct = await res.json();
         console.log("Product created:", newProduct);
         showToast("Product added successfully", "success");
-
-        e.target.reset();
-        loadProducts();
-
+        e.target.reset(); 
+        loadProducts(currentPage); // Reload current page to preserve UI state
     } catch (error) {
-        console.error(error);
-        showToast("Failed to create product: "+error.message, "danger");
-        table.innerHTML = `
-            <tr>
-                <td colspan="6" class="text-center py-4 text-danger">
-                    <i class="bi bi-exclamation-triangle fs-4 d-block mb-2"></i>
-                    Failed to connect to the server.
-                </td>
-            </tr>
-        `;
+        console.error("Error creating product:", error);
+        showToast("Failed to create product: " + handleError(error, null), "danger"); // pass error object to handleError in case it's a network error, and pass null for status since we don't have a response status code in that case
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
@@ -230,8 +247,8 @@ async function updateProduct() {
     };
 
     // Frontend Validation
-    if (!body.name || !body.description) {
-        showToast("Please enter a valid name and description.", "warning");
+    if (!body.name) {
+        showToast("Please enter a valid name", "warning");
         return;
     }
     if (isNaN(body.price) || body.price <= 0) {
@@ -243,6 +260,12 @@ async function updateProduct() {
         return;
     }
 
+    // Disable update button and show loading state
+    const updateBtn = document.getElementById("updateBtn");
+    const originalText = updateBtn.innerHTML;
+    updateBtn.disabled = true;
+    updateBtn.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Updating...';
+
     try {
         const res = await fetch(`${API}/${id}`, {
             method: "PUT",
@@ -252,7 +275,7 @@ async function updateProduct() {
 
         if (!res.ok) {
             const errData = await res.json().catch(() => null);  
-            throw new Error((errData && errData.message) || handleError(res.status)); 
+            throw new Error(errData?.message || handleError(null, res.status));
         }
 
         const updatedProduct = await res.json();
@@ -260,17 +283,25 @@ async function updateProduct() {
         showToast("Product updated successfully", "success");
         
         closeModal();
-        loadProducts();
+        loadProducts(currentPage);
 
     } catch (error) {
-        console.error(error);
-        showToast("Failed to update product: " + error.message, "danger");
+        console.error("Error updating product:", error);
+        showToast("Failed to update product: " + handleError(error, null), "danger");
+    } finally {
+        updateBtn.disabled = false;
+        updateBtn.innerHTML = originalText;
     }
 }
 
 // ---------------- DELETE ----------------
-async function deleteProduct(id) {
+async function deleteProduct(id, btn) {
     if (!confirm(`Delete product with id: ${id}?`)) return;
+
+    // Show loading state specifically on the clicked delete button
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span>';
 
     try {
         const res = await fetch(`${API}/${id}`, {
@@ -279,17 +310,19 @@ async function deleteProduct(id) {
 
         if (!res.ok) {
             const errData = await res.json().catch(() => null);  
-            throw new Error((errData && errData.message) || handleError(res.status)); 
+            throw new Error(errData?.message || handleError(null, res.status));
         }
 
         const result = await res.json();
         console.log("Product deleted:", result);
         showToast("Product deleted successfully", "success");
-        loadProducts();
-
+        loadProducts(currentPage);
     } catch (error) {
-        console.error(error);
-        showToast("Failed to delete product: " + error.message, "danger");
+        console.error("Error deleting product:", error);
+        showToast("Failed to delete product: " + handleError(error, null), "danger");
+        // Only re-enable the button if delete failed (if it succeeds, the entire table re-renders anyway)
+        btn.disabled = false;
+        btn.innerHTML = originalText;
     }
 }
 
@@ -302,17 +335,25 @@ function clearForm() {
 
 
 // ---------------- SEARCH ----------------
-searchInput.addEventListener("input", () => {
-    const value = searchInput.value.toLowerCase();
+let searchTimeout = null;
 
-    const filtered = products.filter(p => {
-        return p.name.toLowerCase().includes(value) ||
-               (p.description && p.description.toLowerCase().includes(value)) || // we check if description exists before trying to call toLowerCase on it
-               p.id.toString().includes(value) ||
-               p.price.toString().includes(value);
-    });
+searchInput.addEventListener("input", () => { 
+    clearTimeout(searchTimeout); // 1. Cancel the previous timer if they are still typing
+    
+    searchTimeout = setTimeout(() => { // 2. Start a new timer for 300ms
+        searchQuery = searchInput.value.trim();
+        loadProducts(1); // Fetch new results from backend starting at page 1
+    }, 300); // 300 milliseconds
+});
 
-    renderTable(filtered);
+
+// ---------------- PAGINATION ----------------
+prevBtn.addEventListener("click", () => {
+    if (currentPage > 1) loadProducts(currentPage - 1);
+});
+
+nextBtn.addEventListener("click", () => {
+    loadProducts(currentPage + 1);
 });
 
 
@@ -322,8 +363,8 @@ const themeIcon = document.getElementById("themeIcon");
 
 function setTheme(theme) {
     // Set Bootstrap theme attribute
-    document.documentElement.setAttribute("data-bs-theme", theme);
-    localStorage.setItem("theme", theme); // Save preference
+    document.documentElement.setAttribute("data-bs-theme", theme); // It sets the data-bs-theme attribute on the root html element to either "light" or "dark". Bootstrap's CSS uses this attribute to apply the corresponding theme styles throughout the page. By changing this attribute, we can toggle between light and dark themes without needing to reload the page or change any other classes.
+    localStorage.setItem("theme", theme); // Save preference in browser storage so after reload, theme remains the same
     
     if (theme === "dark") {
         themeIcon.className = "bi bi-sun-fill fs-5";
@@ -332,12 +373,14 @@ function setTheme(theme) {
     }
 }
 
+// On page load, set theme based on saved preference or default to light
 const savedTheme = localStorage.getItem("theme") || "light";
-setTheme(savedTheme);
+setTheme(savedTheme);3
 
-themeToggle.addEventListener("click", () => {
+// Add click event to toggle theme
+themeToggle.addEventListener("click", () => { // When the theme toggle button is clicked, we determine the current theme by checking the data-bs-theme attribute on the root html element. We then decide what the new theme should be (if current is dark, switch to light; if current is light, switch to dark). We add a rotate effect class to the icon for a nice visual transition, and after a short delay (150ms), we call setTheme with the new theme and remove the rotate effect class.
     const currentTheme = document.documentElement.getAttribute("data-bs-theme");
-    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    const newTheme = currentTheme === "dark" ? "light" : "dark"; // if current theme is dark, we want to switch to light, otherwise switch to dark
     
     themeIcon.classList.add("rotate-effect");
     
@@ -346,6 +389,7 @@ themeToggle.addEventListener("click", () => {
         themeIcon.classList.remove("rotate-effect");
     }, 150);
 });
+
 
 // ---------------- INIT ----------------
 loadProducts();

@@ -32,11 +32,14 @@ app.add_exception_handler(Exception, generic_exception_handler)
 
 @app.get("/", tags=["Root"])
 def greet():
-    logger.info("Root endpoint hit")
+    # logger.info("Root endpoint hit")
     return "Welcome to Inventory Management System"
 
 
 # IMPORTANT: includes api endpoints from routes
 app.include_router(auth_router)
-app.include_router(product_router, dependencies=[Depends(get_current_user)])
+
+app.include_router(product_router)
+# app.include_router(product_router, dependencies=[Depends(get_current_user)])
+
 app.include_router(user_router)

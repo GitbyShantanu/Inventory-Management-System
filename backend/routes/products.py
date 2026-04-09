@@ -22,8 +22,16 @@ def get_all_products(
 ):
     products = db.query(models.Product).order_by(models.Product.id).all()
 
-    if search:
-        products = [p for p in products if search.lower() in p.name.lower()]
+    # If a search query is provided, filter products based on name, description, id, or price
+    if search: 
+        search_lower = search.lower()
+        products = [
+            p for p in products 
+            if search_lower in p.name.lower() or
+               (p.description and (search_lower in p.description.lower())) or # Handle case where description might be None
+               search_lower in str(p.id) or
+               search_lower in str(p.price)
+        ]
 
     start = (page - 1) * limit
     end = start + limit
@@ -136,5 +144,3 @@ def delete_product_by_id(
     db.commit()
     logger.info(f"Product deleted: {db_product.id} - {db_product.name}")
     return db_product
-
-

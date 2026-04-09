@@ -54,7 +54,6 @@ label {
 }
 
 .table-container {
-    height: 400px;
     overflow-y: auto;
 }
 
