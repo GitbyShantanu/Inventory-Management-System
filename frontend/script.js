@@ -1,4 +1,4 @@
-// DASHBOARD BOUNCER (Security)
+// Route Guard Middleware(Security)
 // If no token is found, redirect user to login page
 if (!localStorage.getItem("token")) {
     window.location.href = "login.html";
@@ -7,6 +7,11 @@ if (!localStorage.getItem("token")) {
 // Helper function to get token from localStorage
 function getToken() {
     return localStorage.getItem("token");
+}
+
+// Helper function to get user role from localStorage
+function getRole() {
+    return localStorage.getItem("role");
 }
 
 const API = "http://127.0.0.1:8000/products";
@@ -34,6 +39,22 @@ const limit = 10;
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
 const pageInfo = document.getElementById("pageInfo");
+
+
+// ---------------- UI ROLE ENFORCEMENT ----------------
+const formColumn = document.getElementById("formColumn");
+const tableColumn = document.getElementById("tableColumn");
+const actionsHeader = document.getElementById("actionsHeader");
+
+if (getRole() !== "admin") {
+    // in index.html Hide form, expand table to full width, hide action column header
+    if (formColumn) formColumn.style.display = "none";  
+    if (tableColumn) {
+        tableColumn.classList.remove("col-md-9");
+        tableColumn.classList.add("col-md-12");
+    }
+    if (actionsHeader) actionsHeader.style.display = "none";
+}
 
 
 // ---------------- ERROR HANDLING ----------------
@@ -112,9 +133,11 @@ async function loadProducts(page = 1) {
         if (!res.ok) {
             if (res.status === 401) { // If token has expired or is invalid
                 localStorage.removeItem("token");
-                window.location.href = "login.html?expired=true";
+                localStorage.removeItem("role");
+                window.location.href = "login.html?expired=true"; // Redirect to login with expired query param to show session expired message
                 return; // Stop further execution of this function since we're redirecting the user to login page
             }
+
             const errData = await res.json().catch(() => null); // res may not always return json (e.g. 500 error), so catch parsing errors and return null instead.
             throw new Error(errData?.message || handleError(null, res.status)); // Optional chaining (?.) safely attempts to read message. If errData is null, it gracefully returns undefined without crashing.
         } 
@@ -129,10 +152,13 @@ async function loadProducts(page = 1) {
         nextBtn.disabled = products.length < limit; // Disable next if we didn't get a full page of results
     } catch (error) {
         console.error("Error loading products:", error);
-        showToast("Failed to load products: " + error.message, "danger");
+        showToast("Failed to load products: " + handleError(error, null), "danger");
+        
+        // Show error message in table as well for better visibility.
+        const colspan = getRole() === "admin" ? "6" : "5";
         table.innerHTML = ` 
             <tr>
-                <td colspan="6" class="text-center py-4 text-danger">
+                <td colspan="${colspan}" class="text-center py-4 text-danger">
                     <i class="bi bi-exclamation-triangle fs-4 d-block mb-2"></i>
                     Failed to connect to the server.
                 </td>
@@ -148,9 +174,10 @@ function renderTable(data) {
 
     // if no products, show empty state
     if (data.length === 0) { 
+        const colspan = getRole() === "admin" ? "6" : "5";
         table.innerHTML = `
             <tr>
-                <td colspan="6" class="text-center py-4 text-muted">
+                <td colspan="${colspan}" class="text-center py-4 text-muted">
                     <i class="bi bi-inbox fs-4 d-block mb-2"></i>
                     No products found
                 </td>
@@ -161,34 +188,40 @@ function renderTable(data) {
 
     data.forEach(p => {
         const row = document.createElement("tr");
+        const isAdmin = getRole() === "admin";
 
-        row.innerHTML = `
+        let htmlContent = `
             <td>${p.id}</td>
             <td>${p.name}</td>
             <td>${p.description}</td>
             <td>${p.price}</td>
             <td>${p.quantity}</td>
-            <td class="text-nowrap"></td>
         `;
 
-        const actionCell = row.querySelector("td:last-child");
+        if (isAdmin) {
+            htmlContent += '<td class="text-nowrap"></td>'; // empty action cell
+        }
+        row.innerHTML = htmlContent;
 
-        // EDIT
-        const editBtn = document.createElement("button");
-        editBtn.className = "btn btn-outline-primary btn-sm border-0 me-1 hover-lift";
-        editBtn.title = "Edit";
-        editBtn.innerHTML = "<i class='bi bi-pencil-square'></i>";    
-        editBtn.addEventListener("click", () => openModal(p));
-
-        // DELETE
-        const deleteBtn = document.createElement("button");
-        deleteBtn.className = "btn btn-outline-danger btn-sm border-0 hover-lift";
-        deleteBtn.title = "Delete";
-        deleteBtn.innerHTML = "<i class='bi bi-trash3'></i>";
-        deleteBtn.addEventListener("click", () => deleteProduct(p.id, deleteBtn)); // pass the button element itself
-
-        actionCell.appendChild(editBtn);
-        actionCell.appendChild(deleteBtn);
+        // Only create and append action buttons if the user is admin
+        if (isAdmin) {
+            const actionCell = row.querySelector("td:last-child"); // Select the last cell
+            
+            const editBtn = document.createElement("button");
+            editBtn.className = "btn btn-outline-primary btn-sm border-0 me-1 hover-lift";
+            editBtn.title = "Edit";
+            editBtn.innerHTML = "<i class='bi bi-pencil-square'></i>";    
+            editBtn.addEventListener("click", () => openModal(p));
+            
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "btn btn-outline-danger btn-sm border-0 hover-lift";
+            deleteBtn.title = "Delete";
+            deleteBtn.innerHTML = "<i class='bi bi-trash3'></i>";
+            deleteBtn.addEventListener("click", () => deleteProduct(p.id, deleteBtn));
+            
+            actionCell.appendChild(editBtn);
+            actionCell.appendChild(deleteBtn);
+        }
 
         table.appendChild(row);
     });
@@ -242,6 +275,7 @@ document.querySelector("#productForm").addEventListener("submit", async (e) => {
         if (!res.ok) { // server connected but returned an error status code
             if (res.status === 401) {
                 localStorage.removeItem("token");
+                localStorage.removeItem("role");
                 window.location.href = "login.html?expired=true";
                 return;
             }
@@ -311,6 +345,7 @@ async function updateProduct() {
         if (!res.ok) {
             if (res.status === 401) {
                 localStorage.removeItem("token");
+                localStorage.removeItem("role");
                 window.location.href = "login.html?expired=true";
                 return;
             }
@@ -334,6 +369,13 @@ async function updateProduct() {
     }
 }
 
+// Add event listener for the modal form submission
+document.getElementById("editProductForm").addEventListener("submit", async (e) => {
+    e.preventDefault(); 
+    updateProduct();
+});
+
+
 // ---------------- DELETE ----------------
 async function deleteProduct(id, btn) {
     if (!confirm(`Delete product with id: ${id}?`)) return;
@@ -356,6 +398,7 @@ async function deleteProduct(id, btn) {
         if (!res.ok) {
             if (res.status === 401) {
                 localStorage.removeItem("token");
+                localStorage.removeItem("role");
                 window.location.href = "login.html?expired=true";
                 return;
             }
@@ -444,6 +487,7 @@ themeToggle.addEventListener("click", () => { // When the theme toggle button is
 // ---------------- LOGOUT ----------------
 document.getElementById("logoutBtn").addEventListener("click", () => {
     localStorage.removeItem("token"); 
+    localStorage.removeItem("role"); 
     window.location.href = "login.html"; 
 });
 

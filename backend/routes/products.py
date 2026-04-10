@@ -8,6 +8,8 @@ from backend.exceptions import AppException
 from backend.logging_config import logger
 from backend.schemas import ProductResponse, ProductCreate, ProductUpdate
 import backend.models as models
+from backend.auth_config import RoleChecker
+from backend.enums import UserRole
 
 
 router = APIRouter(prefix="/products", tags=["Products"])
@@ -53,7 +55,7 @@ def get_product_by_id(
 
 
 # Post method to save a product
-@router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(RoleChecker([UserRole.ADMIN]))])
 def save_product(
         product: ProductCreate,
         db: Session = Depends(get_db)
@@ -73,7 +75,7 @@ def save_product(
 
 
 # Put method to update a product
-@router.put("/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK)
+@router.put("/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK, dependencies=[Depends(RoleChecker([UserRole.ADMIN]))])
 def update_product(
         product_id : int,
         product : ProductUpdate,
@@ -100,7 +102,7 @@ def update_product(
         raise AppException(f"Product with the name {product.name} already exists", 409)
 
 
-@router.patch("/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK)
+@router.patch("/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK, dependencies=[Depends(RoleChecker([UserRole.ADMIN]))])
 def patch_product(
         product_id: int,
         product: ProductUpdate,
@@ -131,7 +133,7 @@ def patch_product(
 
 
 # Delete method to delete a product
-@router.delete("/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK)
+@router.delete("/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK, dependencies=[Depends(RoleChecker([UserRole.ADMIN]))])
 def delete_product_by_id(
         product_id: int,
         db: Session = Depends(get_db)

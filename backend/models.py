@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean
+from sqlalchemy import Column, Integer, String, Float
 from backend.database import Base
+from backend.enums import UserRole
 
 # Jo classes Base inherit karegi, wo DB tables hain
 class Product(Base):
@@ -20,4 +21,4 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     email = Column(String)
-
+    role = Column(String, default=UserRole.USER.value, nullable=False)

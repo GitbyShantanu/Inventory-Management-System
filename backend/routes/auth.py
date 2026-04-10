@@ -46,14 +46,15 @@ def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
         token = create_access_token({
             "user_id": db_user.id,
             "username": db_user.username,
-            "email": db_user.email
+            "role": db_user.role
         })
 
         logger.info(f"User logged in: {db_user.username}")
 
         return {
             "access_token": token,
-            "token_type": "bearer"
+            "token_type": "bearer",
+            "role": db_user.role
         }
 
     raise AppException("Invalid credentials", 401)

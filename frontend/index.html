@@ -50,7 +50,7 @@
         <div class="row mt-4">
 
             <!-- FORM -->
-            <div class="col-md-3">
+            <div class="col-md-3" id="formColumn">
                 <div class="card p-3">
                     <h5 class="mb-2 mb-3">Add Product</h5>
 
@@ -59,23 +59,23 @@
                         <input type="hidden" id="productId">  <!--this productId field is not used in update modal but is required to reset the form after submission. It is not used to store the id of the product being edited, as that is handled separately in the modal's hidden field (idField). -->
                         
                         <div class="mb-3">
-                            <label class="form-label">Product Name:</label>
+                            <label class="form-label">Product Name: <span class="text-danger">*</span></label>
                             <input type="text" id="productName" class="form-control" placeholder="Product name"
                             required>
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Description:</label>
+                            <label class="form-label">Description: <span class="text-muted fw-normal small">(Optional)</span></label>
                             <input type="text" id="description" class="form-control" placeholder="Product description">
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Price:</label>
+                            <label class="form-label">Price: <span class="text-danger">*</span></label>
                             <input type="number" id="price" class="form-control" min="0.01" step="0.01" placeholder="Price" required>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Quantity:</label>
+                            <label class="form-label">Quantity: <span class="text-danger">*</span></label>
                             <input type="number" id="qty" class="form-control" min="0" placeholder="Quantity" required>
                         </div>
 
@@ -86,7 +86,7 @@
             </div>
 
             <!-- TABLE -->
-            <div class="col-md-9">
+            <div class="col-md-9" id="tableColumn">
                 <div class="card p-3">
                     <h5>Product List</h5>
 
@@ -102,7 +102,7 @@
                                 <th>Description</th>
                                 <th>Price</th>
                                 <th>Quantity</th>
-                                <th>Actions</th>
+                                <th id="actionsHeader">Actions</th>
                                 </tr>
                             </thead>
 
@@ -134,37 +134,37 @@
 
     <!-- Modal -->
     <div id="modalOverlay" class="overlay">
-        <div class="custom-modal">
-    
-            <h4 class="mb-3 text-center">Edit Product</h4>
+        <div class="custom-modal">   
+            <form id="editProductForm">
+                <h4 class="mb-3 text-center">Edit Product</h4>
 
-            <input type="hidden" id="idField" /> <br>
-    
-            <div class="mb-2"> 
-                <label class="form-label">Product Name</label>
-                <input type="text" id="editName" class="form-control">  
-            </div>
-    
-            <div class="mb-2">
-                <label class="form-label">Description</label>
-                <textarea id="editDesc" class="form-control"></textarea> 
-            </div>
-    
-            <div class="mb-2">
-                <label class="form-label">Price</label>
-                <input type="number" id="editPrice" class="form-control" min="0.01" step="0.01">
-            </div>
-    
-            <div class="mb-3">
-                <label class="form-label">Quantity</label>
-                <input type="number" id="editQty" class="form-control" min="0">
-            </div>
-    
-            <div class="d-flex justify-content-between">
-                <button id="updateBtn" class="btn btn-primary w-50 me-2" onclick="updateProduct()">Update</button>
-                <button class="btn btn-secondary w-50" onclick="closeModal()">Cancel</button>
-            </div>  
-
+                <input type="hidden" id="idField" /> <br>
+        
+                <div class="mb-2"> 
+                    <label class="form-label">Product Name <span class="text-danger">*</span></label>
+                    <input type="text" id="editName" class="form-control" required>  
+                </div>
+        
+                <div class="mb-2">
+                    <label class="form-label">Description <span class="text-muted fw-normal small">(Optional)</span></label>
+                    <textarea id="editDesc" class="form-control"></textarea> 
+                </div>
+        
+                <div class="mb-2">
+                    <label class="form-label">Price <span class="text-danger">*</span></label>
+                    <input type="number" id="editPrice" class="form-control" min="0.01" step="0.01" required>
+                </div>
+        
+                <div class="mb-3">
+                    <label class="form-label">Quantity <span class="text-danger">*</span></label>
+                    <input type="number" id="editQty" class="form-control" min="0" required>
+                </div>
+        
+                <div class="d-flex justify-content-between">
+                    <button type="submit" id="updateBtn" class="btn btn-primary w-50 me-2">Update</button>
+                    <button type="button" class="btn btn-secondary w-50" onclick="closeModal()">Cancel</button>
+                </div>  
+            </form>
         </div>
     </div>
 

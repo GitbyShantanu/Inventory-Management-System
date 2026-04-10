@@ -1,38 +1,41 @@
 const API_AUTH = "http://127.0.0.1:8000/auth";
 
-// BOUNCER (Smart Redirection)
-// Agar user ke paas token hai, toh usko wapas dashboard par bhej do
+// Route Guard (Smart Redirection)
+// If the user already has a token, redirect them to the dashboard
 if (localStorage.getItem("token")) {
     window.location.href = "index.html";
 }
 
-// Check if redirected due to expired session
-const urlParams = new URLSearchParams(window.location.search);
+
+// ---------------- SESSION EXPIRED LOGIC ----------------
+const urlParams = new URLSearchParams(window.location.search); // create URLSearchParams object to easily access search query parameters
 if (urlParams.get("expired")) {
     const msgBox = document.getElementById("loginMessage");
     msgBox.style.color = "red";
     msgBox.innerText = "Your session has expired. Please log in again.";
 }
 
-// --- UI TOGGLE LOGIC ---
+
+// ---------------- UI TOGGLE LOGIC ----------------
 const loginSection = document.getElementById("loginSection");
 const registerSection = document.getElementById("registerSection");
 
 document.getElementById("showRegister").addEventListener("click", (e) => {
-    e.preventDefault(); // Link ko page reload karne se roko
-    loginSection.classList.add("d-none"); // Login chupao
-    registerSection.classList.remove("d-none"); // Register dikhao
-    document.getElementById("registerMessage").innerText = ""; // Purane messages clear karo
+    e.preventDefault(); // Prevent default link behavior
+    loginSection.classList.add("d-none"); // Hide login section
+    registerSection.classList.remove("d-none"); // Show register section
+    document.getElementById("registerMessage").innerText = ""; // Clear previous messages
 });
 
 document.getElementById("showLogin").addEventListener("click", (e) => {
     e.preventDefault();
-    registerSection.classList.add("d-none"); // Register chupao
-    loginSection.classList.remove("d-none"); // Login dikhao
-    document.getElementById("loginMessage").innerText = ""; // Purane messages clear karo
+    registerSection.classList.add("d-none"); // Hide register section
+    loginSection.classList.remove("d-none"); // Show login section
+    document.getElementById("loginMessage").innerText = ""; // Clear previous messages
 });
 
-// LOGIN LOGIC
+
+// ---------------- LOGIN LOGIC ----------------
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault(); 
     
@@ -40,7 +43,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     const password = document.getElementById("loginPassword").value;
     const msgBox = document.getElementById("loginMessage");
 
-    msgBox.style.color = "blue";
+    msgBox.style.color = "skyblue"; 
     msgBox.innerText = "Checking credentials...";
 
     try {
@@ -50,31 +53,38 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
             body: JSON.stringify({ username, password })
         });
 
-        const data = await res.json(); // API response ko data me store kiya
+        const data = await res.json(); 
 
         if (!res.ok) { 
             throw new Error(data.message || "Login failed!");
         }
 
-        // Asli Jadoo Yahan Hai: Token ko browser mein save karo
+        // Save the JWT token in browser's local storage
         localStorage.setItem("token", data.access_token);
+
+        // Save the user's role for role-based access in frontend. 
+        localStorage.setItem("role", data.role);
         
         msgBox.style.color = "green";
         msgBox.innerText = "Login successful! Going to dashboard...";
         
-        // 1 second baad Dashboard par bhej do
+        // Redirect to dashboard after a short delay
         setTimeout(() => {
             window.location.href = "index.html";
         }, 1000);
 
     } catch (error) {
         msgBox.style.color = "red";
-        msgBox.innerText = error.message;
+        if (error.message === "Failed to fetch" || error.message.includes("NetworkError")) {
+            msgBox.innerText = "Server is unreachable. Please ensure the backend is running.";
+        } else {
+            msgBox.innerText = error.message;
+        }
     }
 });
 
 
-// REGISTER LOGIC
+// ---------------- REGISTER LOGIC ----------------
 document.getElementById("registerForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     
@@ -84,7 +94,7 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
     const password = document.getElementById("regPassword").value;
     const msgBox = document.getElementById("registerMessage");
 
-    msgBox.style.color = "blue";
+    msgBox.style.color = "skyblue";
     msgBox.innerText = "Creating account...";
 
     try {
@@ -103,22 +113,26 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
         msgBox.style.color = "green";
         msgBox.innerText = "Account created! Now you can login.";
 
-        // reset the form after successful registration
+        // Reset the form after successful registration
         document.getElementById("registerForm").reset();
         
-        // Thodi der baad automatically Login screen par le aao
+        // Automatically switch to login screen after a short delay
         setTimeout(() => {
             document.getElementById("showLogin").click();
         }, 1500);
 
     } catch (error) {
         msgBox.style.color = "red";
-        msgBox.innerText = error.message;
+        if (error.message === "Failed to fetch" || error.message.includes("NetworkError")) {
+            msgBox.innerText = "Server is unreachable. Please ensure the backend is running.";
+        } else {
+            msgBox.innerText = error.message;
+        }
     }
 });
 
 
-// --- THEME TOGGLE LOGIC ---
+// ---------------- THEME TOGGLE LOGIC ----------------
 const themeToggle = document.getElementById("themeToggle");
 const themeIcon = document.getElementById("themeIcon");
 

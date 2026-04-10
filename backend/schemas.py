@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from backend.enums import UserRole
 from typing import Optional
 
 # For creating a new product (POST)
@@ -53,10 +54,8 @@ class UserResponse(BaseModel):
     name: Optional[str] = None
     username: str
     email: str
+    role: UserRole # Role will always be present in response
 
     model_config = {
         "from_attributes": True
     }
-
-
-

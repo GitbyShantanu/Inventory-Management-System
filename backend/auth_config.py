@@ -10,12 +10,13 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from backend.database import session
 import backend.models as models
 from backend.exceptions import AppException
+from backend.enums import UserRole
 
 load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = 30  # Yahan humne 30 minutes set kiya hai
+ACCESS_TOKEN_EXPIRE_MINUTES = 30  # Token expiration time set to 30 minutes
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer(auto_error=True)
@@ -67,3 +68,17 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         raise AppException("User not found", 404)
 
     return user
+
+
+# Role Checker Dependency to restrict access to certain endpoints based on user roles
+class RoleChecker:
+    def __init__(self, allowed_roles: list[UserRole]):
+        self.allowed_roles = allowed_roles
+
+    # this is special method that allows us to use this class as a dependency in FastAPI routes. It will be called automatically by FastAPI when we use RoleChecker as a dependency.
+    def __call__(self, user: models.User = Depends(get_current_user)):
+        if user.role not in [role.value for role in self.allowed_roles]:
+            raise AppException("You do not have enough permissions to perform this action", 403)
+        
+        return user
+    
