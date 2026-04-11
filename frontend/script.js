@@ -14,7 +14,8 @@ function getRole() {
     return localStorage.getItem("role");
 }
 
-const API = "http://127.0.0.1:8000/products";
+// const API = "http://127.0.0.1:8000/products";
+const API = "https://inventory-management-system-cjr4.onrender.com/products"; 
 
 const nameField = document.querySelector("#productName");
 const descriptionField = document.querySelector("#description");
@@ -127,7 +128,8 @@ async function loadMyProfile() {
     document.getElementById("profileRole").textContent = "Loading...";
     document.getElementById("profileRole").className = "badge bg-secondary";
 
-    const API_PROFILE = "http://127.0.0.1:8000/users/me";
+    // const API_PROFILE = "http://127.0.0.1:8000/users/me";
+    const API_PROFILE = "https://inventory-management-system-cjr4.onrender.com/users/me";
     try {
         const res = await fetch(API_PROFILE, {
             headers: {
@@ -187,6 +189,18 @@ if (profileBtn) {
 // ---------------- LOAD PRODUCTS ----------------
 async function loadProducts(page = 1) {
     currentPage = page;
+
+    // Show loading spinner while fetching
+    const colspan = getRole() === "admin" ? "6" : "5";
+    table.innerHTML = `
+        <tr>
+            <td colspan="${colspan}" class="text-center py-5 text-muted">
+                <div class="spinner-border text-secondary" role="status"></div>
+                <div class="mt-2 small fw-medium">Loading products...</div>
+            </td>
+        </tr>
+    `;
+
     try {
         // Construct URL with pagination and search parameters
         let url = `${API}/?page=${currentPage}&limit=${limit}`;
@@ -332,7 +346,7 @@ document.querySelector("#productForm").addEventListener("submit", async (e) => {
     submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Saving...';
 
     try {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Artificial delay for UX presentation
+        // await new Promise(resolve => setTimeout(resolve, 500)); // Artificial delay for UX presentation
 
         const res = await fetch(API, {
             method: "POST",
@@ -402,7 +416,7 @@ async function updateProduct() {
     updateBtn.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Updating...';
 
     try {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Artificial delay for UX presentation
+        // await new Promise(resolve => setTimeout(resolve, 500)); // Artificial delay for UX presentation
 
         const res = await fetch(`${API}/${id}`, {
             method: "PUT",
@@ -457,7 +471,7 @@ async function deleteProduct(id, btn) {
     btn.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span>';
 
     try {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Artificial delay for UX presentation
+        // await new Promise(resolve => setTimeout(resolve, 500)); // Artificial delay for UX presentation
 
         const res = await fetch(`${API}/${id}`, {
             method: "DELETE",

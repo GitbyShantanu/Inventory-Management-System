@@ -1,4 +1,5 @@
-const API_AUTH = "http://127.0.0.1:8000/auth";
+// const API_AUTH = "http://127.0.0.1:8000/auth";
+const API_AUTH = "https://inventory-management-system-cjr4.onrender.com/auth";
 
 // Route Guard (Smart Redirection)
 // If the user already has a token, redirect them to the dashboard
@@ -43,8 +44,13 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     const password = document.getElementById("loginPassword").value;
     const msgBox = document.getElementById("loginMessage");
 
+    const submitBtn = e.target.querySelector("button[type='submit']");
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Please wait...';
+
     msgBox.style.color = "skyblue"; 
-    msgBox.innerText = "Checking credentials...";
+    msgBox.innerText = "Connecting... (may take up to 50s if server is asleep)";
 
     try {
         const res = await fetch(`${API_AUTH}/login`, {
@@ -80,6 +86,8 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
         } else {
             msgBox.innerText = error.message;
         }
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
     }
 });
 
@@ -94,8 +102,13 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
     const password = document.getElementById("regPassword").value;
     const msgBox = document.getElementById("registerMessage");
 
+    const submitBtn = e.target.querySelector("button[type='submit']");
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Please wait...';
+
     msgBox.style.color = "skyblue";
-    msgBox.innerText = "Creating account...";
+    msgBox.innerText = "Connecting... (may take up to 50s if server is asleep)";
 
     try {
         const res = await fetch(`${API_AUTH}/register`, {
@@ -115,6 +128,8 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
 
         // Reset the form after successful registration
         document.getElementById("registerForm").reset();
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
         
         // Automatically switch to login screen after a short delay
         setTimeout(() => {
@@ -128,6 +143,8 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
         } else {
             msgBox.innerText = error.message;
         }
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
     }
 });
 

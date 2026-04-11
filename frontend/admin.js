@@ -3,7 +3,8 @@ if (!localStorage.getItem("token") || localStorage.getItem("role") !== "admin") 
     window.location.href = "index.html";
 }
 
-const API_USERS = "http://127.0.0.1:8000/users";
+// const API_USERS = "http://127.0.0.1:8000/users";
+const API_USERS = "https://inventory-management-system-cjr4.onrender.com/users";
 const tableBody = document.getElementById("usersTableBody");
 
 function getToken() {
@@ -29,6 +30,16 @@ function showToast(message, type = "danger") {
 }
 
 async function loadUsers() {
+    // Show loading spinner while fetching
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="6" class="text-center py-5 text-muted">
+                <div class="spinner-border text-secondary" role="status"></div>
+                <div class="mt-2 small fw-medium">Loading users...</div>
+            </td>
+        </tr>
+    `;
+
     try {
         const res = await fetch(API_USERS, {
             headers: {

@@ -15,7 +15,7 @@ from backend.enums import UserRole
 load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = 30  # Token expiration time set to 30 minutes
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
