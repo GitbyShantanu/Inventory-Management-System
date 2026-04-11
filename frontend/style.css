@@ -144,6 +144,53 @@ body, .card, .custom-modal, .form-control, .table, th, td {
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
 }
 
+/* Custom Nav Link Hover Effect */
+.custom-nav-link {
+    color: rgba(255, 255, 255, 0.75) !important;
+    transition: color 0.3s ease;
+    position: relative;
+    padding-bottom: 0.3rem;
+}
+.custom-nav-link:hover, .custom-nav-link.active {
+    color: #ffffff !important;
+}
+.custom-nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 50%;
+    background-color: #ffffff;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+    border-radius: 2px;
+}
+.custom-nav-link:hover::after, .custom-nav-link.active::after {
+    width: 70%;
+}
+
+/* Premium Nav Icon Buttons */
+.nav-icon-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+.nav-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
 /* Smooth Lift Hover Effect */
 .hover-lift {
     transition: transform 0.2s ease, box-shadow 0.2s ease !important;

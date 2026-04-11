@@ -194,4 +194,53 @@ themeToggle.addEventListener("click", () => {
     setTimeout(() => { setTheme(newTheme); themeIcon.classList.remove("rotate-effect"); }, 150);
 });
 
+// ---------------- PROFILE MODAL ----------------
+const profileModalOverlay = document.getElementById("profileModalOverlay");
+const profileBtn = document.getElementById("profileBtn");
+
+async function loadMyProfile() {
+    document.getElementById("profileName").textContent = "Loading...";
+    document.getElementById("profileUsername").textContent = "Loading...";
+    document.getElementById("profileEmail").textContent = "Loading...";
+    document.getElementById("profileRole").textContent = "Loading...";
+    document.getElementById("profileRole").className = "badge bg-secondary";
+
+    try {
+        const res = await fetch(API_USERS + "/me", {
+            headers: { "Authorization": `Bearer ${getToken()}` }
+        });
+        if (!res.ok) {
+            if (res.status === 401) {
+                localStorage.removeItem("token");
+                localStorage.removeItem("role");
+                window.location.href = "login.html?expired=true";
+                return;
+            }
+            throw new Error("Failed to load profile");
+        }
+        const user = await res.json();
+        document.getElementById("profileName").textContent = user.name || "N/A";
+        document.getElementById("profileUsername").textContent = user.username;
+        document.getElementById("profileEmail").textContent = user.email;
+        
+        const roleBadge = document.getElementById("profileRole");
+        roleBadge.textContent = user.role.toUpperCase();
+        roleBadge.className = user.role === 'admin' ? 'badge bg-danger' : 'badge bg-primary';
+    } catch (error) {
+        console.error("Error loading profile:", error);
+        showToast("Failed to load profile", "danger");
+        closeProfileModal();
+    }
+}
+
+function openProfileModal() {
+    profileModalOverlay.style.display = "flex";
+    loadMyProfile();
+}
+function closeProfileModal() {
+    profileModalOverlay.style.display = "none";
+}
+if (profileModalOverlay) profileModalOverlay.addEventListener("click", (e) => { if (e.target === profileModalOverlay) closeProfileModal(); });
+if (profileBtn) profileBtn.addEventListener("click", openProfileModal);
+
 loadUsers();

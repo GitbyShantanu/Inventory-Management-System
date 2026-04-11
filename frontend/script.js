@@ -368,6 +368,15 @@ document.querySelector("#productForm").addEventListener("submit", async (e) => {
         showToast("Product added successfully", "success");
         e.target.reset(); 
         loadProducts(currentPage); // Reload current page to preserve UI state
+
+        // Auto-close form on mobile screens (less than 768px)
+        if (window.innerWidth < 768) {
+            const formCollapseEl = document.getElementById("productFormCollapse");
+            if (formCollapseEl) {
+                const bsCollapse = bootstrap.Collapse.getInstance(formCollapseEl);
+                if (bsCollapse) bsCollapse.hide();
+            }
+        }
     } catch (error) {
         console.error("Error creating product:", error);
         showToast("Failed to create product: " + handleError(error, null), "danger"); // pass error object to handleError in case it's a network error, and pass null for status since we don't have a response status code in that case
