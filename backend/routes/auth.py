@@ -62,4 +62,4 @@ def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
             "role": db_user.role
         }
 
-    raise AppException("Invalid credentials", 401)
+    raise AppException("Invalid username or password", 401)
