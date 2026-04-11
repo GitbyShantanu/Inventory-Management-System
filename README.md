@@ -80,7 +80,7 @@ The backend is powered by **FastAPI** for high-performance async API serving, **
 
 | Service | URL |
 |---|---|
-| 🖥️ Frontend (Netlify) | `https://your-app.netlify.app` *(replace with your Netlify URL)* |
+| 🖥️ Frontend (Netlify) | [https://inventorymanagr.netlify.app](https://inventorymanagr.netlify.app/) |
 | ⚙️ Backend API (Render) | [https://inventory-management-system-cjr4.onrender.com](https://inventory-management-system-cjr4.onrender.com) |
 | 📖 Swagger UI | [https://inventory-management-system-cjr4.onrender.com/docs](https://inventory-management-system-cjr4.onrender.com/docs) |
 | 📘 ReDoc | [https://inventory-management-system-cjr4.onrender.com/redoc](https://inventory-management-system-cjr4.onrender.com/redoc) |
