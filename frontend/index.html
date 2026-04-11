@@ -26,6 +26,7 @@
                 <ul class="navbar-nav ms-lg-4 me-auto fw-medium">
                     <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+                    <li class="nav-item d-none" id="adminUsersLink"><a class="nav-link fw-bold" href="admin.html"><i class="bi bi-people-fill"></i> Users</a></li>
                 </ul>
 
                 <!-- Action Buttons -->
@@ -37,6 +38,11 @@
                         <i id="themeIcon" class="bi bi-moon-fill fs-5"></i>
                     </button>
                     
+                    <!-- Profile Button -->
+                    <button id="profileBtn" class="btn btn-outline-light border-0 shadow-none ms-1" title="My Profile">
+                        <i class="bi bi-person-circle fs-5"></i>
+                    </button>
+
                     <!-- Logout Button -->
                     <button id="logoutBtn" class="btn btn-danger btn-sm ms-3 fw-bold shadow-sm">
                         <i class="bi bi-box-arrow-right"></i> Logout
@@ -165,6 +171,32 @@
                     <button type="button" class="btn btn-secondary w-50" onclick="closeModal()">Cancel</button>
                 </div>  
             </form>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModalOverlay" class="overlay">
+        <div class="custom-modal">
+            <h4 class="mb-4 text-center">My Profile</h4>
+            <div class="mb-3">
+                <label class="form-label text-muted small mb-0">Name</label>
+                <div id="profileName" class="fw-bold fs-5">Loading...</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label text-muted small mb-0">Username</label>
+                <div id="profileUsername" class="fw-medium">Loading...</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label text-muted small mb-0">Email</label>
+                <div id="profileEmail" class="fw-medium">Loading...</div>
+            </div>
+            <div class="mb-4">
+                <label class="form-label text-muted small mb-0">Role</label>
+                <div><span id="profileRole" class="badge bg-secondary">Loading...</span></div>
+            </div>
+            <div class="d-flex justify-content-center mt-2">
+                <button type="button" class="btn btn-secondary w-100" onclick="closeProfileModal()">Close</button>
+            </div>
         </div>
     </div>
 

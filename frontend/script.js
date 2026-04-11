@@ -24,6 +24,8 @@ const qtyField = document.querySelector("#qty");
 const table = document.querySelector("#tableBody");
 const searchInput = document.querySelector("#searchInput");
 const overlay = document.getElementById("modalOverlay");
+const profileModalOverlay = document.getElementById("profileModalOverlay");
+const profileBtn = document.getElementById("profileBtn");
 
 // Modal fields
 const idField = document.getElementById("idField");
@@ -54,6 +56,9 @@ if (getRole() !== "admin") {
         tableColumn.classList.add("col-md-12");
     }
     if (actionsHeader) actionsHeader.style.display = "none";
+} else {
+    const adminUsersLink = document.getElementById("adminUsersLink");
+    if (adminUsersLink) adminUsersLink.classList.remove("d-none");
 }
 
 
@@ -111,6 +116,72 @@ function closeModal() {
 overlay.addEventListener("click", (e) => {
     if (e.target === overlay) closeModal(); 
 });
+
+
+// ---------------- PROFILE MODAL ----------------
+async function loadMyProfile() {
+    // Reset fields to loading state
+    document.getElementById("profileName").textContent = "Loading...";
+    document.getElementById("profileUsername").textContent = "Loading...";
+    document.getElementById("profileEmail").textContent = "Loading...";
+    document.getElementById("profileRole").textContent = "Loading...";
+    document.getElementById("profileRole").className = "badge bg-secondary";
+
+    const API_PROFILE = "http://127.0.0.1:8000/users/me";
+    try {
+        const res = await fetch(API_PROFILE, {
+            headers: {
+                "Authorization": `Bearer ${getToken()}`
+            }
+        });
+
+        if (!res.ok) {
+            if (res.status === 401) {
+                localStorage.removeItem("token");
+                localStorage.removeItem("role");
+                window.location.href = "login.html?expired=true";
+                return;
+            }
+            const errData = await res.json().catch(() => null);
+            throw new Error(errData?.message || handleError(null, res.status));
+        }
+
+        const user = await res.json();
+        
+        document.getElementById("profileName").textContent = user.name || "N/A";
+        document.getElementById("profileUsername").textContent = user.username;
+        document.getElementById("profileEmail").textContent = user.email;
+        
+        const roleBadge = document.getElementById("profileRole");
+        roleBadge.textContent = user.role.toUpperCase();
+        roleBadge.className = user.role === 'admin' ? 'badge bg-danger' : 'badge bg-primary';
+
+    } catch (error) {
+        console.error("Error loading profile:", error);
+        showToast("Failed to load profile: " + handleError(error, null), "danger");
+        closeProfileModal();
+    }
+}
+
+// when profile button is clicked, open profile modal and load profile data
+function openProfileModal() {
+    profileModalOverlay.style.display = "flex";
+    loadMyProfile(); // Fetch fresh data every time modal is opened
+}
+
+function closeProfileModal() {
+    profileModalOverlay.style.display = "none";
+}
+
+// click outside profile modal
+profileModalOverlay.addEventListener("click", (e) => {
+    if (e.target === profileModalOverlay) closeProfileModal(); 
+});
+
+// if we are on dashboard and have profile button, add event listener to open profile modal when clicked
+if (profileBtn) {
+    profileBtn.addEventListener("click", openProfileModal);
+}
 
 
 // ---------------- LOAD PRODUCTS ----------------

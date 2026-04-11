@@ -22,6 +22,7 @@
                 <ul class="navbar-nav ms-lg-4 me-auto fw-medium">
                     <li class="nav-item"><a class="nav-link active fw-bold" href="about.html">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+                    <li class="nav-item d-none" id="adminUsersLink"><a class="nav-link fw-bold" href="admin.html"><i class="bi bi-people-fill"></i> Users</a></li>
                 </ul>
                 <div class="d-flex align-items-center mt-3 mt-lg-0">
                     <a href="https://github.com/GitbyShantanu/Inventory-Management-System" target="_blank" class="btn btn-outline-light border-0 shadow-none me-2" title="View Source Code">
@@ -125,6 +126,11 @@
         // Auth Bouncer
         if (!localStorage.getItem("token")) window.location.href = "login.html";
         
+        // UI Role Enforcement
+        if (localStorage.getItem("role") === "admin") {
+            document.getElementById("adminUsersLink").classList.remove("d-none");
+        }
+
         // Logout
         document.getElementById("logoutBtn").addEventListener("click", () => {
             localStorage.removeItem("token");
