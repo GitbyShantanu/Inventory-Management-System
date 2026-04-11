@@ -63,6 +63,22 @@ def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
         raise AppException("Username or email already exists", 409)
 
 
+# Change a user's role (Admin only)
+@router.patch("/{user_id}/role", response_model=UserResponse, status_code=status.HTTP_200_OK, dependencies=[Depends(RoleChecker([UserRole.ADMIN]))])
+def change_user_role(user_id: int, role: UserRole, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    if user_id == current_user.id:
+        raise AppException("You cannot change your own role", 400)
+
+    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not db_user:
+        raise AppException(f"User with id: {user_id} not found", 404)
+
+    db_user.role = role
+    db.commit()
+    db.refresh(db_user)
+    logger.info(f"User {db_user.id} role updated to {role} by {current_user.username}")
+    return db_user
+
 # Delete a user by ID (Admin only) 
 @router.delete("/{user_id}", response_model=UserResponse, status_code=status.HTTP_200_OK, dependencies=[Depends(RoleChecker([UserRole.ADMIN]))])
 def delete_user_by_id(user_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):

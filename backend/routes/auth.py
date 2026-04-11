@@ -8,6 +8,7 @@ from backend.exceptions import AppException
 from backend.logging_config import logger
 from backend.schemas import UserResponse, UserCreate, UserLogin
 import backend.models as models
+from backend.enums import UserRole
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -17,11 +18,15 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
     # db_user = models.User(user.model_dump()) # why this dont work : model and dto password field name mismatch
 
+    # Check if this is the very first user in the database
+    is_first_user = db.query(models.User).count() == 0
+
     db_user = models.User(
         name=user.name,
         username=user.username.strip().lower(),
         hashed_password=hash_password(user.password),
-        email=user.email.strip().lower()
+        email=user.email.strip().lower(),
+        role=UserRole.ADMIN if is_first_user else UserRole.USER
     )
     try:
         db.add(db_user)
