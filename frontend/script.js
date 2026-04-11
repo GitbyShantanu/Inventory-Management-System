@@ -1,9 +1,3 @@
-// Route Guard Middleware(Security)
-// If no token is found, redirect user to login page
-if (!localStorage.getItem("token")) {
-    window.location.href = "login.html";
-}
-
 // Helper function to get token from localStorage
 function getToken() {
     return localStorage.getItem("token");

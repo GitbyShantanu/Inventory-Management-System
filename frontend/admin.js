@@ -1,8 +1,3 @@
-// STRICT BOUNCER: Only Admins allowed here
-if (!localStorage.getItem("token") || localStorage.getItem("role") !== "admin") {
-    window.location.href = "index.html";
-}
-
 // const API_USERS = "http://127.0.0.1:8000/users";
 const API_USERS = "https://inventory-management-system-cjr4.onrender.com/users";
 const tableBody = document.getElementById("usersTableBody");
@@ -96,6 +91,15 @@ function renderUsersTable(users) {
 
         // Delete Button (Prevent deleting yourself using decoded JWT user_id)
         if (currentUser && user.id !== currentUser.user_id) { 
+            // Change Role Button
+            const roleBtn = document.createElement("button");
+            const isTargetAdmin = user.role === "admin";
+            roleBtn.className = `btn btn-sm border-0 me-1 hover-lift ${isTargetAdmin ? 'btn-outline-warning' : 'btn-outline-success'}`;
+            roleBtn.title = isTargetAdmin ? "Demote to User" : "Promote to Admin";
+            roleBtn.innerHTML = isTargetAdmin ? "<i class='bi bi-arrow-down-circle'></i>" : "<i class='bi bi-arrow-up-circle'></i>";
+            roleBtn.addEventListener("click", () => changeUserRole(user.id, isTargetAdmin ? 'user' : 'admin', roleBtn));
+            actionCell.appendChild(roleBtn);
+
             const deleteBtn = document.createElement("button");
             deleteBtn.className = "btn btn-outline-danger btn-sm border-0 hover-lift";
             deleteBtn.title = "Delete User";
@@ -106,6 +110,36 @@ function renderUsersTable(users) {
 
         tableBody.appendChild(row);
     });
+}
+
+async function changeUserRole(id, newRole, btn) {
+    const actionText = newRole === "admin" ? "promote to Admin" : "demote to User";
+    if (!confirm(`Are you sure you want to ${actionText} user ID ${id}?`)) return;
+
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span>';
+
+    try {
+        const res = await fetch(`${API_USERS}/${id}/role?role=${newRole}`, {
+            method: "PATCH",
+            headers: {
+                "Authorization": `Bearer ${getToken()}`
+            }
+        });
+        
+        if (!res.ok) {
+            const errData = await res.json().catch(() => null);
+            throw new Error(errData?.message || "Failed to change user role");
+        }
+        showToast("User role updated successfully", "success");
+        loadUsers();
+    } catch (error) {
+        console.error("Error changing role:", error);
+        showToast(error.message || "Failed to change user role", "danger");
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+    }
 }
 
 async function deleteUser(id, btn) {

@@ -1,10 +1,15 @@
 // const API_AUTH = "http://127.0.0.1:8000/auth";
 const API_AUTH = "https://inventory-management-system-cjr4.onrender.com/auth";
 
-// Route Guard (Smart Redirection)
-// If the user already has a token, redirect them to the dashboard
-if (localStorage.getItem("token")) {
-    window.location.href = "index.html";
+
+function showToast(message, type = "danger") {
+    const toastEl = document.getElementById("toastBox");
+    if (!toastEl) return;
+    
+    document.getElementById("toastMessage").textContent = message;
+    toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
 }
 
 
@@ -81,11 +86,12 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 
     } catch (error) {
         msgBox.style.color = "red";
+        let errorMsg = error.message;
         if (error.message === "Failed to fetch" || error.message.includes("NetworkError")) {
-            msgBox.innerText = "Server is unreachable. Please ensure the backend is running.";
-        } else {
-            msgBox.innerText = error.message;
+            errorMsg = "Server is unreachable. Please ensure the internet connection is stable.";
         }
+        msgBox.innerText = errorMsg;
+        showToast(errorMsg, "danger");
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
     }
@@ -138,11 +144,12 @@ document.getElementById("registerForm").addEventListener("submit", async (e) => 
 
     } catch (error) {
         msgBox.style.color = "red";
+        let errorMsg = error.message;
         if (error.message === "Failed to fetch" || error.message.includes("NetworkError")) {
-            msgBox.innerText = "Server is unreachable. Please ensure the backend is running.";
-        } else {
-            msgBox.innerText = error.message;
+            errorMsg = "Server is unreachable. Please ensure the internet connection is stable.";
         }
+        msgBox.innerText = errorMsg;
+        showToast(errorMsg, "danger");
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
     }
