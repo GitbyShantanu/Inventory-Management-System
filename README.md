@@ -387,6 +387,7 @@ The `netlify.toml` in the repository root handles SPA-style redirects so all rou
 
 6. *(Optional)* Configure a custom domain under **Site configuration → Domain management**.
 
+
 ---
 
 ## 📄 License
