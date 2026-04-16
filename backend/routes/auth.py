@@ -36,7 +36,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
         return db_user
     except IntegrityError:
         db.rollback()
-        raise AppException(f"User with username {user.username} or email already exists", 409)
+        raise AppException(f"User with username {user.username} already exists", 409)
 
 
 # To login a user
